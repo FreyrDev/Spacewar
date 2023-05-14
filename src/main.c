@@ -56,7 +56,23 @@ void colour(int col) { wcolour(stdscr, col); }
 void create_ui(WINDOW *ui, char title[]) {
   box(ui, 0, 0);
   mvwprintw(ui, 0, 4, title);
-  mvwprintw(ui, 3, 5, "THRUSTERS");
+  mvwprintw(ui, 4, 6, "┌───┤ ENGINE ├───┐ ┌────────┐");
+  mvwprintw(ui, 5, 6, "│                │ │ooOo00oo│");
+  mvwprintw(ui, 6, 6, "│                │ │00OoO0Oo│");
+  mvwprintw(ui, 7, 6, "│                │ │ / || \\ │");
+  mvwprintw(ui, 8, 6, "│                │ │ o 88 o │");
+  mvwprintw(ui, 9, 6, "└────────────────┘ └────────┘");
+
+  mvwprintw(ui, 12, 6, "┌────┤ STATUS READOUTS ├────┐");
+  mvwprintw(ui, 13, 6, "│                           │");
+  mvwprintw(ui, 14, 6, "│ Current Velocity:         │");
+  mvwprintw(ui, 15, 6, "│                           │");
+  mvwprintw(ui, 16, 6, "│ Current Heading:          │");
+  mvwprintw(ui, 17, 6, "│                           │");
+  mvwprintw(ui, 18, 6, "│                           │");
+  mvwprintw(ui, 19, 6, "│                           │");
+  mvwprintw(ui, 20, 6, "│                           │");
+  mvwprintw(ui, 21, 6, "└───────────────────────────┘");
   wrefresh(ui);
 }
 
@@ -145,10 +161,22 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
     mvwaddch(game, ((objects+i)->y)/2, (objects+i)->x, charof((objects+i)->type));
   }
   wnoutrefresh(game);
-  if (objects[1].acc) { mvwprintw (ui1, 2, 5, "THRUSTING"); }
-  else                { mvwprintw (ui1, 2, 5, "         "); }
-  if (objects[2].acc) { mvwprintw (ui2, 2, 5, "THRUSTING"); }
-  else                { mvwprintw (ui2, 2, 5, "         "); }
+  if (objects[1].acc) {
+    mvwprintw (ui1, 6, 9, "MAIN ENGINES");
+    mvwprintw (ui1, 7, 9, " FULL POWER ");
+  }
+  else {
+    mvwprintw (ui1, 6, 9, "            ");
+    mvwprintw (ui1, 7, 9, "            ");
+  }
+  if (objects[2].acc) {
+    mvwprintw (ui2, 6, 9, "MAIN ENGINES");
+    mvwprintw (ui2, 7, 9, " FULL POWER ");
+  }
+  else {
+    mvwprintw (ui2, 6, 9, "            ");
+    mvwprintw (ui2, 7, 9, "            ");
+  }
 
   wnoutrefresh(ui1);
   wnoutrefresh(ui2);
