@@ -5,6 +5,11 @@
 
 // gcc -o out/main src/main.c -lncursesw && ./out/main
 
+// This is just because I was writing it on Windows and the error was annoying me
+#ifndef CLOCK_MONOTONIC_RAW
+  #define CLOCK_MONOTONIC_RAW 0
+#endif
+
 enum Type {
   PLAYER,
   BULLET,
@@ -13,16 +18,8 @@ enum Type {
 
 typedef struct GameObject {
   enum Type type;
-  float y, x, vely, velx, mass, dir;
+  float y, x, vely, velx, dir, mass;
 } GameObject;
-
-typedef struct Player {
-  float y, x, vely, velx, dir;
-} Player;
-
-typedef struct Gravity {
-  int y, x, str;
-} Gravity;
 
 void setup() {
   setlocale(LC_ALL, "");
@@ -48,9 +45,9 @@ void setup() {
 void wcolour(WINDOW *win,int col) { wattron(win, COLOR_PAIR(col+1)); }
 void colour(int col) { wcolour(stdscr, col); }
 
-Gravity create_gravity_source(WINDOW *win, int y, int x, int str, char ch) {
+GameObject create_gravity_source(WINDOW *win, int y, int x, int mass, char ch) {
   mvwaddch(win, y, x, ch);
-  Gravity gravity = { y, x, str };
+  GameObject gravity = {STAR, y, x, 0, 0, 0, mass};
   return gravity;
 }
 
@@ -61,20 +58,40 @@ int get_delta(struct timespec *start, struct timespec *end) {
   result += end->tv_nsec - start->tv_nsec;
 }
 
-void update_physics(Player *p1) {
-  p1->y += p1->vely;
-  p1->x += p1->velx;
+char charof(enum Type type) {
+  if (type == PLAYER) {
+    return '1';
+  }
+  else if (type == BULLET) {
+    return '*';
+  }
+  else {
+    return '@';
+  }
 }
 
-void update_screen(WINDOW *game_win, Player *p1) {
+void update_physics(GameObject *objects, int num) {
+  int i = 0;
+  while (i < num) {
+    (objects+i)->y += (objects+i)->vely;
+    (objects+i)->x += (objects+i)->velx;
+    i++;
+  }
+}
+
+void update_screen(WINDOW *game_win, GameObject *objects, int num) {
   wclear(game_win);
   box(game_win, 0, 0);
-  mvwaddch(game_win, p1->y, p1->x, '1');
+  int i = 0;
+  while (i < num) {
+    mvwaddch(game_win, (objects+i)->y, (objects+i)->x, charof((objects+i)->type));
+    i++;
+  }
 }
 
 int main() {
   setup();
-
+  int delta = 0;
 
   int scrh;
   int scrw;
@@ -84,27 +101,34 @@ int main() {
   int gamew = 101;
   WINDOW *game = newwin(gameh, gamew, (scrh-gameh)/2, (scrw-gamew)/2);
   wcolour(game, 0);
-  box(game,0,0);
-  Gravity black_hole = create_gravity_source(game, gameh/2,gamew/2,100,'@');
-  wrefresh(game);
 
-  Player p1 = {10, 10, 0, 1, 0};
+  GameObject black_hole = create_gravity_source(game, gameh/2,gamew/2,100,'@');
+  GameObject p1 = {PLAYER, 10, 10, 0.5, 1, 0, 1};
+  GameObject game_objects[64] = {black_hole, p1};
 
+  struct timespec start;
+  clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
-  while(true) {
-    struct timespec start;
-    clock_gettime(CLOCK_MONOTONIC, &start);
+  while (true) {    
+    if (delta >= 33333333) {
+      clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
-    update_physics(&p1);
-    update_screen(game, &p1);
+      update_physics(game_objects, 2);
+      update_screen(game, game_objects, 2);
+      wnoutrefresh(game);
 
-    usleep(20000);
-    struct timespec end;
-    clock_gettime(CLOCK_MONOTONIC, &end);
-    clrtoeol();
-    mvprintw(0,0,"%d", get_delta(&start, &end));
-    refresh();
-    wrefresh(game);
+      mvprintw(0,0, "%d", 1000000000/delta);
+      wnoutrefresh(stdscr);
+      doupdate();
+
+      delta = 0;
+    }
+    else {
+      struct timespec end;
+      clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+      delta = get_delta(&start, &end);
+    }
+  
   }
 
   endwin();
