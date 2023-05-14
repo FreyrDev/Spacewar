@@ -4,8 +4,6 @@
 #include <unistd.h>
 #include <math.h>
 
-// gcc -o out/main src/main.c -lncursesw -lm && ./out/main
-
 // This is just because I was writing it on Windows and the error was annoying me
 #ifndef CLOCK_MONOTONIC_RAW
   #define CLOCK_MONOTONIC_RAW 0
