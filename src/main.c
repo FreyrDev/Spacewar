@@ -108,6 +108,10 @@ wchar_t charofdir(enum Dir dir) {
   }
 }
 
+GameObject new_gameobject(enum Type type, float y, float x, enum Dir dir) {
+  return (GameObject){type, y, x, y, x, y, x, y, x, 0, 0, 0, dir};
+}
+
 float total_vel(GameObject *object) {
   return object->vely*object->vely + object->velx*object->velx;
 }
@@ -155,10 +159,10 @@ void update_physics(WINDOW* game_win, GameObject *objects) {
 
       if (r < 0.5) {
         if (objects[i].type == PLAYER1) {
-          objects[i] = (GameObject){PLAYER1, 75.5, 25.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, N};
+          objects[i] = new_gameobject(PLAYER1, 75.5, 25.5, N);
         }
         else {
-          objects[i] = (GameObject){PLAYER2, 26.5, 76.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, S};
+          objects[i] = new_gameobject(PLAYER2, 26.5, 76.5, S);
         }
       }
 
@@ -247,11 +251,11 @@ int main() {
   // Initiate array of all game objects (the black hole, the players, and empty spots for bullets to spawn);
   GameObject game_objects[16];
   for (int i=0; i < 16; i++) {
-    game_objects[i] = (GameObject){ERR, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    game_objects[i] = new_gameobject(ERR, 0, 0, 0);
   }
-  game_objects[0] = (GameObject){BLACKHOLE, gameh+0.5, gamew/2+0.5, 0, 0, 0,0, 0, 0, 0, 0, 0, N};
-  game_objects[1] = (GameObject){PLAYER1, 75.5, 25.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, N};
-  game_objects[2] = (GameObject){PLAYER2, 26.5, 76.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, S};
+  game_objects[0] = new_gameobject(BLACKHOLE, gameh+0.5, gamew/2+0.5, N);
+  game_objects[1] = new_gameobject(PLAYER1, 75.5, 25.5, N);
+  game_objects[2] = new_gameobject(PLAYER2, 26.5, 76.5, S);
 
   // Start timing to ensure consitent frame rate
   int delta = 0;
