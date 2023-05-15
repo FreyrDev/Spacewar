@@ -23,7 +23,7 @@ enum Dir {
 
 typedef struct GameObject {
   enum Type type;
-  float y, x, vely, velx;
+  float y, x, y1, x1, y2, x2, y3, x3, vely, velx;
   int acc, dir;
 } GameObject;
 
@@ -38,15 +38,13 @@ void setup() {
   curs_set(0);
   refresh();
 
-  init_color(COLOR_BLUE, 400, 850, 975);
-  // init_color(COLOR_CYAN, 250, 375, 150);
-  // init_color(COLOR_GREEN, 125, 150, 100);
-  // init_color(COLOR_YELLOW, 75, 100, 75);
+  init_color(COLOR_CYAN, 400, 850, 975);
+  init_color(COLOR_GREEN, 250, 400, 150);
+  init_color(COLOR_YELLOW, 125, 175, 100);
   init_color(COLOR_BLACK, 50, 50, 50);
-  init_pair(1, COLOR_BLUE, COLOR_BLACK);
-  // init_pair(2, COLOR_CYAN, COLOR_BLACK);
-  // init_pair(3, COLOR_GREEN, COLOR_BLACK);
-  // init_pair(4, COLOR_YELLOW, COLOR_BLACK);
+  init_pair(1, COLOR_CYAN, COLOR_BLACK);
+  init_pair(2, COLOR_GREEN, COLOR_BLACK);
+  init_pair(3, COLOR_YELLOW, COLOR_BLACK);
 }
 
 void wcolour(WINDOW *win,int col) { wattron(win, COLOR_PAIR(col+1)); }
@@ -120,6 +118,13 @@ void update_physics(WINDOW* game_win, GameObject *objects) {
   getmaxyx(game_win, winh, winw);
 
   for (int i=0; i < 16; i++) {
+    objects[i].y3 = objects[i].y2;
+    objects[i].x3 = objects[i].x2;
+    objects[i].y2 = objects[i].y1;
+    objects[i].x2 = objects[i].x1;
+    objects[i].y1 = objects[i].y;
+    objects[i].x1 = objects[i].x;
+
     if (objects[i].acc) {
       switch (objects[i].dir) {
         case N:  objects[i].vely -= 0.005;  break;
@@ -150,10 +155,10 @@ void update_physics(WINDOW* game_win, GameObject *objects) {
 
       if (r < 0.5) {
         if (objects[i].type == PLAYER1) {
-          objects[i] = (GameObject){PLAYER1, 75.5, 25.5, 0, 0, 0, N};
+          objects[i] = (GameObject){PLAYER1, 75.5, 25.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, N};
         }
         else {
-          objects[i] = (GameObject){PLAYER2, 26.5, 76.5, 0, 0, 0, S};
+          objects[i] = (GameObject){PLAYER2, 26.5, 76.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, S};
         }
       }
 
@@ -180,6 +185,12 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
 
   mvwprintw(game, 0, 4, "┤ SPACEWAR! ├");
   for (int i=0; i < 16; i++) {
+    wcolour(game, 2);
+    mvwaddch(game, ((objects+i)->y3)/2, (objects+i)->x3, charof((objects+i)->type));
+    mvwaddch(game, ((objects+i)->y2)/2, (objects+i)->x2, charof((objects+i)->type));
+    wcolour(game, 1);
+    mvwaddch(game, ((objects+i)->y1)/2, (objects+i)->x1, charof((objects+i)->type));
+    wcolour(game, 0);
     mvwaddch(game, ((objects+i)->y)/2, (objects+i)->x, charof((objects+i)->type));
   }
   wnoutrefresh(game);
@@ -236,11 +247,11 @@ int main() {
   // Initiate array of all game objects (the black hole, the players, and empty spots for bullets to spawn);
   GameObject game_objects[16];
   for (int i=0; i < 16; i++) {
-    game_objects[i] = (GameObject){ERR, 0, 0, 0, 0, 0, 0};
+    game_objects[i] = (GameObject){ERR, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   }
-  game_objects[0] = (GameObject){BLACKHOLE, gameh+0.5, gamew/2+0.5, 0, 0, 0, N};
-  game_objects[1] = (GameObject){PLAYER1, 75.5, 25.5, 0, 0, 0, N};
-  game_objects[2] = (GameObject){PLAYER2, 26.5, 76.5, 0, 0, 0, S};
+  game_objects[0] = (GameObject){BLACKHOLE, gameh+0.5, gamew/2+0.5, 0, 0, 0,0, 0, 0, 0, 0, 0, N};
+  game_objects[1] = (GameObject){PLAYER1, 75.5, 25.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, N};
+  game_objects[2] = (GameObject){PLAYER2, 26.5, 76.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, S};
 
   // Start timing to ensure consitent frame rate
   int delta = 0;
