@@ -2,7 +2,7 @@
  A clone of the 1962 game "Spacewar!" using text based graphics (ASCII plus box-drawing characters).
 
 ## Running
- Compilation requires `-lncursesw` and `-lm`, for example `gcc -o out/main src/main.c -lncursesw -lm && ./out/main` compiles it and the runs the compiled file from its output directory.
+ Compilation is handled by the makefile, `make` will compile and run, while `make c` or `make r` will do each separately. To compile manually, remember to link `-lncursesw` and `-lm`.
 
 ## Controls
  Due to limitations of ncurses, the controls are tap or toggle based rather than hold down. Engines are toggle on/off, while turning requires taps.
