@@ -2,6 +2,7 @@
 #include <locale.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <math.h>
 
 // This is just because I was writing it on Windows and the error was annoying me
@@ -67,10 +68,7 @@ void create_ui(WINDOW *ui, char title[]) {
   mvwprintw(ui, 15, 6, "│                           │");
   mvwprintw(ui, 16, 6, "│ Current Heading:          │");
   mvwprintw(ui, 17, 6, "│                           │");
-  mvwprintw(ui, 18, 6, "│                           │");
-  mvwprintw(ui, 19, 6, "│                           │");
-  mvwprintw(ui, 20, 6, "│                           │");
-  mvwprintw(ui, 21, 6, "└───────────────────────────┘");
+  mvwprintw(ui, 18, 6, "└───────────────────────────┘");
   wrefresh(ui);
 }
 
@@ -99,6 +97,23 @@ char charof(enum Type type) {
   }
 }
 
+wchar_t charofdir(enum Dir dir) {
+  switch (dir) {
+    case N:  return L'↑';
+    case NE: return L'↗';
+    case E:  return L'→';
+    case SE: return L'↘';
+    case S:  return L'↓';
+    case SW: return L'↙';
+    case W:  return L'←';
+    case NW: return L'↖';
+  }
+}
+
+float total_vel(GameObject *object) {
+  return object->vely*object->vely + object->velx*object->velx;
+}
+
 void update_physics(WINDOW* game_win, GameObject *objects) {
   int winh;
   int winw;
@@ -107,18 +122,18 @@ void update_physics(WINDOW* game_win, GameObject *objects) {
   for (int i=0; i < 16; i++) {
     if (objects[i].acc) {
       switch (objects[i].dir) {
-        case N:  objects[i].vely -= 0.01;  break;
-        case NE: objects[i].vely -= 0.007;
-                 objects[i].velx += 0.007; break;
-        case E:  objects[i].velx += 0.01;  break;
-        case SE: objects[i].vely += 0.007;
-                 objects[i].velx += 0.007; break;
-        case S:  objects[i].vely += 0.01;  break;
-        case SW: objects[i].vely += 0.007;
-                 objects[i].velx -= 0.007; break;
-        case W:  objects[i].velx -= 0.01;  break;
-        case NW: objects[i].vely -= 0.007;
-                 objects[i].velx -= 0.007; break;
+        case N:  objects[i].vely -= 0.005;  break;
+        case NE: objects[i].vely -= 0.0035;
+                 objects[i].velx += 0.0035; break;
+        case E:  objects[i].velx += 0.005;  break;
+        case SE: objects[i].vely += 0.0035;
+                 objects[i].velx += 0.0035; break;
+        case S:  objects[i].vely += 0.005;  break;
+        case SW: objects[i].vely += 0.0035;
+                 objects[i].velx -= 0.0035; break;
+        case W:  objects[i].velx -= 0.005;  break;
+        case NW: objects[i].vely -= 0.0035;
+                 objects[i].velx -= 0.0035; break;
       }
     }
 
@@ -127,16 +142,25 @@ void update_physics(WINDOW* game_win, GameObject *objects) {
       float dx = objects[i].x - objects[0].x;
       float r2  = fabs(dy)*fabs(dy) + fabs(dx)*fabs(dx);
       float r = sqrt(r2);
-      float g = -1 / r2;
+      float g = -2 / r2;
       float unity = dy / r;
       float unitx = dx / r;
       objects[i].vely += g * unity; 
       objects[i].velx += g * unitx;
 
-      float total_vel = objects[i].vely*objects[i].vely + objects[i].velx*objects[i].velx;
-      if (total_vel > 1) {
-        objects[i].vely /= total_vel;
-        objects[i].velx /= total_vel;
+      if (r < 0.5) {
+        if (objects[i].type == PLAYER1) {
+          objects[i] = (GameObject){PLAYER1, 75.5, 25.5, 0, 0, 0, N};
+        }
+        else {
+          objects[i] = (GameObject){PLAYER2, 26.5, 76.5, 0, 0, 0, S};
+        }
+      }
+
+      float velxy = total_vel(objects+i);
+      if (velxy > 1) {
+        objects[i].vely /= velxy;
+        objects[i].velx /= velxy;
       }
     }
 
@@ -151,7 +175,7 @@ void update_physics(WINDOW* game_win, GameObject *objects) {
 }
 
 void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) {
-  wclear(game);
+  werase(game);
   box(game, 0, 0);
 
   mvwprintw(game, 0, 4, "┤ SPACEWAR! ├");
@@ -159,22 +183,29 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
     mvwaddch(game, ((objects+i)->y)/2, (objects+i)->x, charof((objects+i)->type));
   }
   wnoutrefresh(game);
+
   if (objects[1].acc) {
-    mvwprintw (ui1, 6, 9, "MAIN ENGINES");
-    mvwprintw (ui1, 7, 9, " FULL POWER ");
+    mvwprintw(ui1, 6, 9, "MAIN ENGINES");
+    mvwprintw(ui1, 7, 9, " FULL POWER ");
   }
   else {
-    mvwprintw (ui1, 6, 9, "            ");
-    mvwprintw (ui1, 7, 9, "            ");
+    mvwprintw(ui1, 6, 9, "            ");
+    mvwprintw(ui1, 7, 9, "            ");
   }
   if (objects[2].acc) {
-    mvwprintw (ui2, 6, 9, "MAIN ENGINES");
-    mvwprintw (ui2, 7, 9, " FULL POWER ");
+    mvwprintw(ui2, 6, 9, "MAIN ENGINES");
+    mvwprintw(ui2, 7, 9, " FULL POWER ");
   }
   else {
-    mvwprintw (ui2, 6, 9, "            ");
-    mvwprintw (ui2, 7, 9, "            ");
+    mvwprintw(ui2, 6, 9, "            ");
+    mvwprintw(ui2, 7, 9, "            ");
   }
+
+  mvwprintw(ui1, 14, 26, "%07.4f\%", total_vel(objects+1)*100);
+  mvwprintw(ui2, 14, 26, "%07.4f\%", total_vel(objects+2)*100);
+
+  mvwprintw(ui1, 16, 26, "%03d° %lc", objects[1].dir*45, charofdir(objects[1].dir));
+  mvwprintw(ui2, 16, 26, "%03d° %lc", objects[2].dir*45, charofdir(objects[2].dir));
 
   wnoutrefresh(ui1);
   wnoutrefresh(ui2);
@@ -207,9 +238,9 @@ int main() {
   for (int i=0; i < 16; i++) {
     game_objects[i] = (GameObject){ERR, 0, 0, 0, 0, 0, 0};
   }
-  game_objects[0] = (GameObject){BLACKHOLE, gameh, gamew/2, 0, 0, 0, N};
-  game_objects[1] = (GameObject){PLAYER1, 75, 25, 0, 0, 0, N};
-  game_objects[2] = (GameObject){PLAYER2, 25, 75, 0, 0, 0, S};
+  game_objects[0] = (GameObject){BLACKHOLE, gameh+0.5, gamew/2+0.5, 0, 0, 0, N};
+  game_objects[1] = (GameObject){PLAYER1, 75.5, 25.5, 0, 0, 0, N};
+  game_objects[2] = (GameObject){PLAYER2, 26.5, 76.5, 0, 0, 0, S};
 
   // Start timing to ensure consitent frame rate
   int delta = 0;
@@ -217,7 +248,7 @@ int main() {
   clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
   while (true) {    
-    if (delta >= 66666666) { // Frametime set to 66.6 million nanoseconds (15 FPS)
+    if (delta >= 33333333) { // Frametime set to 33.3 million nanoseconds (30 FPS)
       clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
       int keys_pressed[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
@@ -237,7 +268,7 @@ int main() {
         }
         if(keys_pressed[i] == 'a') {
           game_objects[1].dir -= 1;
-          game_objects[1].dir %= 8;
+          // game_objects[1].dir %= 8;
           if(game_objects[1].dir < 0) { game_objects[1].dir += 8;}
         }
         if(keys_pressed[i] == 'd') {
@@ -249,7 +280,7 @@ int main() {
         }
         if(keys_pressed[i] == KEY_LEFT) {
           game_objects[2].dir -= 1;
-          game_objects[2].dir %= 8;
+          // game_objects[2].dir %= 8;
           if(game_objects[2].dir < 0) { game_objects[2].dir += 8;}
         }
         if(keys_pressed[i] == KEY_RIGHT) {
@@ -260,10 +291,6 @@ int main() {
 
       update_physics(game, game_objects);
       update_screen(game, ui1, ui2, game_objects);
-
-      // mvprintw(0,0, "%f,%f", game_objects[1].y,game_objects[1].x);
-      // mvprintw(1,0, "%f,%f", game_objects[2].y,game_objects[2].x);
-      // refresh();
 
       delta = 0;
     }
