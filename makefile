@@ -1,8 +1,8 @@
 SRC = src/main.c
 LNK = -lm -lncursesw
 
-cr:
-	make c && make r
+cr: $(SRC)
+	gcc -o out/spacewar $(SRC) $(LNK) && ./out/spacewar
 
 c: $(SRC)
 	gcc -o out/spacewar $(SRC) $(LNK)
