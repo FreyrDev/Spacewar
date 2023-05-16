@@ -191,8 +191,8 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
   for (int i=0; i < 16; i++) {
     wcolour(game, 2);
     mvwaddch(game, ((objects+i)->y3)/2, (objects+i)->x3, charof((objects+i)->type));
-    mvwaddch(game, ((objects+i)->y2)/2, (objects+i)->x2, charof((objects+i)->type));
     wcolour(game, 1);
+    mvwaddch(game, ((objects+i)->y2)/2, (objects+i)->x2, charof((objects+i)->type));
     mvwaddch(game, ((objects+i)->y1)/2, (objects+i)->x1, charof((objects+i)->type));
     wcolour(game, 0);
     mvwaddch(game, ((objects+i)->y)/2, (objects+i)->x, charof((objects+i)->type));
@@ -275,8 +275,6 @@ int main() {
       }
       keys_pressed[ch_num] = ERR;
 
-      move(0,0);
-      clrtoeol();
       for (int i = 0; i < 8 && keys_pressed[i] != ERR; i++) {
         if(keys_pressed[i] == 'w') {
           game_objects[1].acc = !game_objects[1].acc;
