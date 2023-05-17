@@ -4,11 +4,15 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <math.h>
+#include <limits.h>
 
 // This is just because I was writing it on Windows and the error was annoying me
 #ifndef CLOCK_MONOTONIC_RAW
   #define CLOCK_MONOTONIC_RAW 0
 #endif
+
+#define PHYSICS_SPEED 1.0
+#define FRAMERATE 50
 
 enum Type {
   BLACKHOLE,
@@ -23,8 +27,8 @@ enum Dir {
 
 typedef struct GameObject {
   enum Type type;
-  float y, x, y1, x1, y2, x2, y3, x3, vely, velx;
-  int acc, dir;
+  double y, x, y1, x1, y2, x2, y3, x3, vely, velx;
+  int acc, dir, age;
 } GameObject;
 
 void setup() {
@@ -77,13 +81,13 @@ int get_delta(struct timespec *start, struct timespec *end) {
   result += end->tv_nsec - start->tv_nsec;
 }
 
-char charof(enum Type type) {
+wchar_t charof(enum Type type) {
   switch (type) {
-    case PLAYER1:   return 'A';
-    case PLAYER2:   return 'T';
-    case BULLET:    return '*';
-    case BLACKHOLE: return '@';
-    default:        return ' ';
+    case PLAYER1:   return L'A';
+    case PLAYER2:   return L'T';
+    case BULLET:    return L'.';
+    case BLACKHOLE: return L'@';
+    default:        return L' ';
   }
 }
 
@@ -100,73 +104,120 @@ wchar_t charofdir(enum Dir dir) {
   }
 }
 
-GameObject new_gameobject(enum Type type, float y, float x, enum Dir dir) {
-  return (GameObject){type, y, x, y, x, y, x, y, x, 0, 0, 0, dir};
+GameObject new_gameobject(enum Type type, double y, double x, enum Dir dir) {
+  return (GameObject){type, y, x, y, x, y, x, y, x, 0, 0, 0, dir, 0};
 }
 
-float total_vel(GameObject *object) {
+double total_vel(GameObject *object) {
   return object->vely*object->vely + object->velx*object->velx;
 }
 
-void update_physics(WINDOW* game_win, GameObject *objects) {
+double thrust_vector(int object_dir, char axis) {
+  double magnitude;
+  double direction;
+
+  switch (object_dir%2) {
+    case 0: magnitude = 1;         break;
+    case 1: magnitude = 1/sqrt(2); break;
+  }
+  
+  if (axis == 'y') {
+    switch (object_dir) {
+      case N:
+      case NE:
+      case NW:
+        direction = -1;
+        break;
+      case S:
+      case SE:
+      case SW:
+        direction = 1;
+        break;
+      case E:
+      case W:
+        direction = 0;
+        break;
+    }
+  }
+  else {
+    switch (object_dir) {
+      case W:
+      case NW:
+      case SW:
+        direction = -1;
+        break;
+      case E:
+      case NE:
+      case SE:
+        direction = 1;
+        break;
+      case N:
+      case S:
+        direction = 0;
+        break;
+    }
+  }
+
+  return magnitude * direction;
+}
+
+void update_physics(WINDOW* game_win, GameObject *objects, int delta, int frame) {
+  double d = (double)delta/33333333.3 * PHYSICS_SPEED;
   int winh;
   int winw;
   getmaxyx(game_win, winh, winw);
 
-  for (int i=0; i < 16; i++) {
-    objects[i].y3 = objects[i].y2;
-    objects[i].x3 = objects[i].x2;
-    objects[i].y2 = objects[i].y1;
-    objects[i].x2 = objects[i].x1;
-    objects[i].y1 = objects[i].y;
-    objects[i].x1 = objects[i].x;
+  for (int i=0; i < 5; i++) {
+    if (frame%4 == 0) {
+      objects[i].y3 = objects[i].y2;
+      objects[i].x3 = objects[i].x2;
+      objects[i].y2 = objects[i].y1;
+      objects[i].x2 = objects[i].x1;
+      objects[i].y1 = objects[i].y;
+      objects[i].x1 = objects[i].x;
+    }
 
-    if (objects[i].acc) {
-      switch (objects[i].dir) {
-        case N:  objects[i].vely -= 0.005;  break;
-        case NE: objects[i].vely -= 0.0035;
-                 objects[i].velx += 0.0035; break;
-        case E:  objects[i].velx += 0.005;  break;
-        case SE: objects[i].vely += 0.0035;
-                 objects[i].velx += 0.0035; break;
-        case S:  objects[i].vely += 0.005;  break;
-        case SW: objects[i].vely += 0.0035;
-                 objects[i].velx -= 0.0035; break;
-        case W:  objects[i].velx -= 0.005;  break;
-        case NW: objects[i].vely -= 0.0035;
-                 objects[i].velx -= 0.0035; break;
+    if (objects[i].type == BULLET) {
+      objects[i].age -= delta;
+      if (objects[i].age < 0) {
+        objects[i] = new_gameobject(ERR, 0, 0, 0);
       }
     }
 
-    if (objects[i].type == PLAYER1 || objects[i].type == PLAYER2) {
-      float dy = objects[i].y - objects[0].y;
-      float dx = objects[i].x - objects[0].x;
-      float r2  = fabs(dy)*fabs(dy) + fabs(dx)*fabs(dx);
-      float r = sqrt(r2);
-      float g = -2 / r2;
-      float unity = dy / r;
-      float unitx = dx / r;
-      objects[i].vely += g * unity; 
-      objects[i].velx += g * unitx;
+    if (objects[i].acc) {
+      objects[i].vely += 0.005 * thrust_vector(objects[i].dir, 'y') * d;
+      objects[i].velx += 0.005 * thrust_vector(objects[i].dir, 'x') * d;
+    }
 
-      if (r < 0.5) {
+    if (objects[i].type == PLAYER1 || objects[i].type == PLAYER2) {
+      double dy = objects[i].y - objects[0].y;
+      double dx = objects[i].x - objects[0].x;
+      double r2  = fabs(dy)*fabs(dy) + fabs(dx)*fabs(dx);
+      double r = sqrt(r2);
+      double g = -2 / r2;
+      double unity = dy / r;
+      double unitx = dx / r;
+      objects[i].vely += g * unity * d;
+      objects[i].velx += g * unitx * d;
+
+      if (r < 0.1) {
         if (objects[i].type == PLAYER1) {
-          objects[i] = new_gameobject(PLAYER1, 75.5, 25.5, N);
+          objects[i] = new_gameobject(PLAYER1, 76.5, 25.5, N);
         }
         else {
-          objects[i] = new_gameobject(PLAYER2, 26.5, 76.5, S);
+          objects[i] = new_gameobject(PLAYER2, 26.5, 75.5, S);
         }
       }
 
-      float velxy = total_vel(objects+i);
+      double velxy = total_vel(objects+i);
       if (velxy > 1) {
         objects[i].vely /= velxy;
         objects[i].velx /= velxy;
       }
     }
 
-    objects[i].y += objects[i].vely;
-    objects[i].x += objects[i].velx;
+    objects[i].y += objects[i].vely * d;
+    objects[i].x += objects[i].velx * d;
 
     if (objects[i].y >= 2*winh-2) { objects[i].y -= 2*winh-4; }
     else if (objects[i].y <= 2) { objects[i].y += 2*winh-4; }
@@ -180,14 +231,14 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
   box(game, 0, 0);
 
   mvwprintw(game, 0, 4, "┤ SPACEWAR! ├");
-  for (int i=0; i < 16; i++) {
+  for (int i=0; i < 5; i++) {
     wcolour(game, 2);
-    mvwaddch(game, ((objects+i)->y3)/2, (objects+i)->x3, charof((objects+i)->type));
+    mvwprintw(game, ((objects+i)->y3)/2, (objects+i)->x3, "%lc", charof((objects+i)->type));
     wcolour(game, 1);
-    mvwaddch(game, ((objects+i)->y2)/2, (objects+i)->x2, charof((objects+i)->type));
-    mvwaddch(game, ((objects+i)->y1)/2, (objects+i)->x1, charof((objects+i)->type));
+    mvwprintw(game, ((objects+i)->y2)/2, (objects+i)->x2, "%lc", charof((objects+i)->type));
+    mvwprintw(game, ((objects+i)->y1)/2, (objects+i)->x1, "%lc", charof((objects+i)->type));
     wcolour(game, 0);
-    mvwaddch(game, ((objects+i)->y)/2, (objects+i)->x, charof((objects+i)->type));
+    mvwprintw(game, ((objects+i)->y)/2, (objects+i)->x, "%lc", charof((objects+i)->type));
   }
   wnoutrefresh(game);
 
@@ -241,21 +292,21 @@ int main() {
   create_ui(ui2, "┤ PLAYER 2 ├");
 
   // Initiate array of all game objects (the black hole, the players, and empty spots for bullets to spawn);
-  GameObject game_objects[16];
-  for (int i=0; i < 16; i++) {
-    game_objects[i] = new_gameobject(ERR, 0, 0, 0);
-  }
-  game_objects[0] = new_gameobject(BLACKHOLE, gameh+0.5, gamew/2+0.5, N);
-  game_objects[1] = new_gameobject(PLAYER1, 75.5, 25.5, N);
-  game_objects[2] = new_gameobject(PLAYER2, 26.5, 76.5, S);
+  GameObject game_objects[5];
+  game_objects[0] = new_gameobject(BLACKHOLE, (double)gameh+0.5, (double)gamew/2, N);
+  game_objects[1] = new_gameobject(PLAYER1, 76.5, 25.5, N);
+  game_objects[2] = new_gameobject(PLAYER2, 26.5, 75.5, S);
+  game_objects[3] = new_gameobject(ERR, 0, 0, 0);
+  game_objects[4] = new_gameobject(ERR, 0, 0, 0);
 
   // Start timing to ensure consitent frame rate
+  int frame = 0;
   int delta = 0;
   struct timespec start;
   clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
   while (true) {    
-    if (delta >= 33333333) { // Frametime set to 33.3 million nanoseconds (30 FPS)
+    if (delta >= 1000000000/FRAMERATE) { // Frametime set to 20 million nanoseconds (50 FPS)
       clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
       int keys_pressed[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
@@ -268,36 +319,52 @@ int main() {
       keys_pressed[ch_num] = ERR;
 
       for (int i = 0; i < 8 && keys_pressed[i] != ERR; i++) {
-        if(keys_pressed[i] == 'w') {
+        if (keys_pressed[i] == 'w') {
           game_objects[1].acc = !game_objects[1].acc;
         }
-        if(keys_pressed[i] == 'a') {
+        else if (keys_pressed[i] == 'a') {
           game_objects[1].dir -= 1;
           // game_objects[1].dir %= 8;
           if(game_objects[1].dir < 0) { game_objects[1].dir += 8;}
         }
-        if(keys_pressed[i] == 'd') {
+        else if (keys_pressed[i] == 'd') {
           game_objects[1].dir += 1;
           game_objects[1].dir %= 8;
         }
-        if(keys_pressed[i] == KEY_UP) {
+        else if (keys_pressed[i] == 's') {
+          if (game_objects[3].type == ERR) {
+            game_objects[3] = new_gameobject(BULLET, game_objects[1].y, game_objects[1].x, N);
+            game_objects[3].vely = game_objects[1].vely + 0.5*thrust_vector(game_objects[1].dir, 'y');
+            game_objects[3].velx = game_objects[1].velx + 0.5*thrust_vector(game_objects[1].dir, 'x');
+            game_objects[3].age = INT_MAX;
+          }
+        }
+        else if (keys_pressed[i] == KEY_UP) {
           game_objects[2].acc = !game_objects[2].acc;
         }
-        if(keys_pressed[i] == KEY_LEFT) {
+        else if (keys_pressed[i] == KEY_LEFT) {
           game_objects[2].dir -= 1;
-          // game_objects[2].dir %= 8;
           if(game_objects[2].dir < 0) { game_objects[2].dir += 8;}
         }
-        if(keys_pressed[i] == KEY_RIGHT) {
+        if (keys_pressed[i] == KEY_RIGHT) {
           game_objects[2].dir += 1;
           game_objects[2].dir %= 8;
         }
+        else if (keys_pressed[i] == KEY_DOWN) {
+          if (game_objects[3].type == ERR) {
+            game_objects[4] = new_gameobject(BULLET, game_objects[2].y, game_objects[2].x, N);
+            game_objects[4].vely = game_objects[2].vely + 0.5*thrust_vector(game_objects[2].dir, 'y');
+            game_objects[4].velx = game_objects[2].velx + 0.5*thrust_vector(game_objects[2].dir, 'x');
+            game_objects[4].age = INT_MAX;
+          }
+        }
       }
 
-      update_physics(game, game_objects);
+      update_physics(game, game_objects, delta, frame);
       update_screen(game, ui1, ui2, game_objects);
 
       delta = 0;
+      frame++;
     }
     else {
       struct timespec end;
