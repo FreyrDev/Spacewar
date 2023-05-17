@@ -368,7 +368,7 @@ int main() {
           game_objects[2].dir %= 8;
         }
         else if (keys_pressed[i] == KEY_DOWN) {
-          if (game_objects[3].type == ERR) {
+          if (game_objects[4].type == ERR) {
             game_objects[4] = new_gameobject(BULLET, game_objects[2].y+2*thrust_vector(game_objects[2].dir, 'y'), game_objects[2].x+2*thrust_vector(game_objects[2].dir, 'x'), N, INT_MAX);
             game_objects[4].vely = game_objects[2].vely + 0.5*thrust_vector(game_objects[2].dir, 'y');
             game_objects[4].velx = game_objects[2].velx + 0.5*thrust_vector(game_objects[2].dir, 'x');
