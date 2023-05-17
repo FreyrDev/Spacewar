@@ -10,6 +10,9 @@
 #ifndef CLOCK_MONOTONIC_RAW
   #define CLOCK_MONOTONIC_RAW 0
 #endif
+#ifndef M_PI
+  #define M_PI 3.14159265358979323846
+#endif
 
 #define PHYSICS_SPEED 1.0
 #define FRAMERATE 50
@@ -55,36 +58,51 @@ void wcolour(WINDOW *win,int col) { wattron(win, COLOR_PAIR(col+1)); }
 void colour(int col) { wcolour(stdscr, col); }
 
 void create_ui(WINDOW *ui, int player) {
-  box(ui, 0, 0);
-  mvwprintw(ui, 0, 4, "┤ PLAYER %d ├", player);
-  mvwprintw(ui, 4, 6, "┌───┤ ENGINE ├───┐ ┌────────┐");
-  mvwprintw(ui, 5, 6, "│                │ │ooOo00oo│");
-  mvwprintw(ui, 6, 6, "│                │ │00OoO0Oo│");
-  mvwprintw(ui, 7, 6, "│                │ │ / || \\ │");
-  mvwprintw(ui, 8, 6, "│                │ │ o 88 o │");
-  mvwprintw(ui, 9, 6, "└────────────────┘ └────────┘");
+  mvwprintw(ui,  0, 0, "┌────────┤ PLAYER %d ├────────┐", player);
+  mvwprintw(ui,  1, 0, "│ ┌──┐                  ┌──┐ │");
+  mvwprintw(ui,  2, 0, "│ │ |│  SCORE  [     ]  │| │ │");
+  mvwprintw(ui,  3, 0, "│ │||│ LIVES [        ] │||│ │");
+  mvwprintw(ui,  4, 0, "│ └──┘                  └──┘ │");
+  mvwprintw(ui,  5, 0, "└────────────────────────────┘");
+  mvwprintw(ui,  6, 0, "┌┤ VISUALS ├┐ ┌──┤ ENGINE ├──┐");
+  mvwprintw(ui,  7, 0, "│           │ │              │");
+  mvwprintw(ui,  8, 0, "│           │ │              │");
+  mvwprintw(ui,  9, 0, "│           │ │              │");
+  mvwprintw(ui, 10, 0, "│           │ │      ╶╴      │");
+  mvwprintw(ui, 11, 0, "│           │ └──────────────┘");
+  mvwprintw(ui, 12, 0, "│           │ ┌──────────────┐");
+  mvwprintw(ui, 13, 0, "│           │ │.~^~._.~^~._.~│");
+  mvwprintw(ui, 14, 0, "└───────────┘ └──────────────┘");
+  mvwprintw(ui, 15, 0, "┌─┤ HEADING ├─┐ ┌┤ WEAPONRY ├┐");
+  mvwprintw(ui, 16, 0, "│             │ │            │");
+  mvwprintw(ui, 17, 0, "│        ---  │ │ T╭╮T  ---  │");
+  mvwprintw(ui, 18, 0, "│   •         │ │ |├┤|       │");
+  mvwprintw(ui, 19, 0, "│        ---  │ │ |└┘|  ---  │");
+  mvwprintw(ui, 20, 0, "│             │ │ I==I       │");
+  mvwprintw(ui, 21, 0, "└─────────────┘ └────────────┘");
+  mvwprintw(ui, 22, 0, "┌────┤ STATUS READOUTS ├─────┐");
+  mvwprintw(ui, 23, 0, "│                            │");
+  mvwprintw(ui, 24, 0, "│ CURRENT VELOCITY           │");
+  mvwprintw(ui, 25, 0, "│ TRAVEL DIRECTION           │");
+  mvwprintw(ui, 26, 0, "│                            │");
+  mvwprintw(ui, 27, 0, "└────────────────────────────┘");
+  mvwprintw(ui, 28, 0, "┌────────────────────────────┐");
+  mvwprintw(ui, 29, 0, "└────────────────────────────┘");
 
-  mvwprintw(ui, 12, 6, "┌────┤ STATUS READOUTS ├────┐");
-  mvwprintw(ui, 13, 6, "│                           │");
-  mvwprintw(ui, 14, 6, "│ Current Velocity:         │");
-  mvwprintw(ui, 15, 6, "│                           │");
-  mvwprintw(ui, 16, 6, "│ Current Heading:          │");
-  mvwprintw(ui, 17, 6, "│                           │");
-  mvwprintw(ui, 18, 6, "└───────────────────────────┘");
 
   if (player == 1) {
-    mvwprintw(ui, 20, 6, "  /!\\  ");
-    mvwprintw(ui, 21, 6, " (   ) ");
-    mvwprintw(ui, 22, 6, " / θ \\");
-    mvwprintw(ui, 23, 6, "( ___ )");
-    mvwprintw(ui, 24, 6, "/_\\ /_\\");
+    mvwprintw(ui,  8, 3, "  /!\\  ");
+    mvwprintw(ui,  9, 3, " (   ) ");
+    mvwprintw(ui, 10, 3, " / θ \\");
+    mvwprintw(ui, 11, 3, "( ___ )");
+    mvwprintw(ui, 12, 3, "/_\\ /_\\");
   }
   else {
-    mvwprintw(ui, 20, 6, " __!__ ");
-    mvwprintw(ui, 21, 6, "(_   _)");
-    mvwprintw(ui, 22, 6, "  |θ|  ");
-    mvwprintw(ui, 23, 6, "  ( )  ");
-    mvwprintw(ui, 24, 6, "  /_\\ ");
+    mvwprintw(ui,  8, 3, " __!__ ");
+    mvwprintw(ui,  9, 3, "(_   _)");
+    mvwprintw(ui, 10, 3, "  |θ|  ");
+    mvwprintw(ui, 11, 3, "  ( )  ");
+    mvwprintw(ui, 12, 3, "  /_\\ ");
   }
   wrefresh(ui);
 }
@@ -100,7 +118,7 @@ wchar_t charof(enum Type type) {
   switch (type) {
     case PLAYER1:   return L'A';
     case PLAYER2:   return L'T';
-    case BULLET:    return L'.';
+    case BULLET:    return L'·';
     case BLACKHOLE: return L'@';
     default:        return L' ';
   }
@@ -123,8 +141,8 @@ GameObject new_gameobject(enum Type type, double y, double x, enum Dir dir, int 
   return (GameObject){type, y, x, y, x, y, x, y, x, 0, 0, 0, dir, score};
 }
 
-double total_vel(GameObject *object) {
-  return object->vely*object->vely + object->velx*object->velx;
+double total_vel(GameObject object) {
+  return object.vely*object.vely + object.velx*object.velx;
 }
 
 double thrust_vector(int object_dir, char axis) {
@@ -221,7 +239,7 @@ void update_physics(WINDOW* game_win, GameObject *objects, int delta, int frame)
         objects[i] = destroy(objects[i]);
       }
 
-      double velxy = total_vel(objects+i);
+      double velxy = total_vel(objects[i]);
       if (velxy > 1) {
         objects[i].vely /= velxy;
         objects[i].velx /= velxy;
@@ -272,31 +290,90 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
   }
   wnoutrefresh(game);
 
-  if (objects[1].acc) {
-    mvwprintw(ui1, 6, 9, "MAIN ENGINES");
-    mvwprintw(ui1, 7, 9, " FULL POWER ");
+  mvwprintw(ui1, 2, 16, "%05d", objects[1].score);
+  mvwprintw(ui2, 2, 16, "%05d", objects[2].score);
+
+  if (objects[3].type == ERR) {
+    mvwprintw(ui1, 8, 6, "!");
+    mvwprintw(ui1, 17, 19, "╭╮");
+    mvwprintw(ui1, 18, 19, "├┤");
+    mvwprintw(ui1, 19, 19, "└┘");
+    mvwprintw(ui1, 18, 23, "READY");
   }
   else {
-    mvwprintw(ui1, 6, 9, "            ");
-    mvwprintw(ui1, 7, 9, "            ");
+    mvwprintw(ui1, 8, 6, ".");
+    mvwprintw(ui1, 17, 19, "  ");
+    mvwprintw(ui1, 18, 19, "  ");
+    mvwprintw(ui1, 19, 19, "  ");
+    mvwprintw(ui1, 18, 23, "     ");
+  }
+  if (objects[4].type == ERR) {
+    mvwprintw(ui2, 8, 6, "!");
+    mvwprintw(ui2, 17, 19, "╭╮");
+    mvwprintw(ui2, 18, 19, "├┤");
+    mvwprintw(ui2, 19, 19, "└┘");
+    mvwprintw(ui2, 18, 23, "READY");
+  }
+  else {
+    mvwprintw(ui2, 8, 6, ".");
+    mvwprintw(ui2, 17, 19, "  ");
+    mvwprintw(ui2, 18, 19, "  ");
+    mvwprintw(ui2, 19, 19, "  ");
+    mvwprintw(ui2, 18, 23, "     ");
+  }
+
+  if (objects[1].acc) {
+    mvwprintw(ui1,  8, 16, "MAIN ENGINES");
+    mvwprintw(ui1,  9, 16, " FULL POWER ");
+    mvwprintw(ui1, 10, 16, "! ! !╶╴! ! !");
+    mvwprintw(ui1, 13,  4, "^   ^");
+  }
+  else {
+    mvwprintw(ui1,  8, 16, "            ");
+    mvwprintw(ui1,  9, 16, "            ");
+    mvwprintw(ui1, 10, 16, "     ╶╴     ");
+    mvwprintw(ui1, 13,  4, "     ");
   }
   if (objects[2].acc) {
-    mvwprintw(ui2, 6, 9, "MAIN ENGINES");
-    mvwprintw(ui2, 7, 9, " FULL POWER ");
+    mvwprintw(ui2,  8, 16, "MAIN ENGINES");
+    mvwprintw(ui2,  9, 16, " FULL POWER ");
+    mvwprintw(ui2, 10, 16, "! ! !╶╴! ! !");
+    mvwprintw(ui2, 13,  4, "  ^  ");
   }
   else {
-    mvwprintw(ui2, 6, 9, "            ");
-    mvwprintw(ui2, 7, 9, "            ");
+    mvwprintw(ui2,  8, 16, "            ");
+    mvwprintw(ui2,  9, 16, "            ");
+    mvwprintw(ui2, 10, 16, "     ╶╴     ");
+    mvwprintw(ui2, 13,  4, "     ");
   }
 
-  mvwprintw(ui1, 14, 26, "%07.4f\%", total_vel(objects+1)*100);
-  mvwprintw(ui2, 14, 26, "%07.4f\%", total_vel(objects+2)*100);
+  mvwprintw(ui1, 17, 2, "     ");
+  mvwprintw(ui1, 18, 2, "  •  ");
+  mvwprintw(ui1, 19, 2, "     ");
+  mvwprintw(ui2, 17, 2, "     ");
+  mvwprintw(ui2, 18, 2, "  •  ");
+  mvwprintw(ui2, 19, 2, "     ");
 
-  mvwprintw(ui1, 16, 26, "%03d° %lc", objects[1].dir*45, charofdir(objects[1].dir));
-  mvwprintw(ui2, 16, 26, "%03d° %lc", objects[2].dir*45, charofdir(objects[2].dir));
-  
-  mvwprintw(ui1, 17, 26, "%d", objects[1].score);
-  mvwprintw(ui2, 17, 26, "%d", objects[2].score);
+  mvwprintw(ui1, 18+round(thrust_vector(objects[1].dir, 'y')), 4+2*round(thrust_vector(objects[1].dir, 'x')), "%lc", charofdir(objects[1].dir));
+  mvwprintw(ui2, 18+round(thrust_vector(objects[2].dir, 'y')), 4+2*round(thrust_vector(objects[2].dir, 'x')), "%lc", charofdir(objects[2].dir));
+
+  mvwprintw(ui1, 18, 9, "%03d°", objects[1].dir * 45);
+  mvwprintw(ui2, 18, 9, "%03d°", objects[2].dir * 45);
+
+  if (total_vel(objects[1]) > 0.995) {
+    mvwprintw(ui1, 24, 20, "100.000%%");
+  }
+  else {
+    mvwprintw(ui1, 24, 20, "%07.3f%%", total_vel(objects[1]) * 100);
+  }
+  if (total_vel(objects[2]) > 0.995) {
+    mvwprintw(ui2, 24, 20, "100.000%%");
+  }
+  else {
+    mvwprintw(ui2, 24, 20, "%07.3f%%", total_vel(objects[2]) * 100);
+  }
+  mvwprintw(ui1, 25, 20, "%07.3f°", fmod(atan2(objects[1].vely, objects[1].velx) * 180/M_PI + 450, 360));
+  mvwprintw(ui2, 25, 20, "%07.3f°", fmod(atan2(objects[2].vely, objects[2].velx) * 180/M_PI + 450, 360));
 
   wnoutrefresh(ui1);
   wnoutrefresh(ui2);
@@ -313,10 +390,10 @@ int main() {
 
   int gameh = 51;
   int gamew = 101;
-  int uiw = 41;
+  int uisize = 30;
   WINDOW *game = newwin(gameh, gamew, (scrh-gameh)/2, (scrw-gamew)/2);
-  WINDOW *ui1 = newwin(51, uiw, (scrh-gameh)/2, (scrw-uiw)/2-72);
-  WINDOW *ui2 = newwin(51, uiw, (scrh-gameh)/2, (scrw-uiw)/2+72);
+  WINDOW *ui1 = newwin(uisize, uisize, (scrh-gameh)/2, (scrw-uisize)/2-69);
+  WINDOW *ui2 = newwin(uisize, uisize, (scrh-gameh)/2, (scrw-uisize)/2+69);
   wcolour(game, 0);
   wcolour(ui1, 0);
   wcolour(ui2, 0);
@@ -357,7 +434,6 @@ int main() {
         }
         else if (keys_pressed[i] == 'a') {
           game_objects[1].dir -= 1;
-          // game_objects[1].dir %= 8;
           if(game_objects[1].dir < 0) { game_objects[1].dir += 8;}
         }
         else if (keys_pressed[i] == 'd') {
