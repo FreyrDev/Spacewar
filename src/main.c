@@ -78,20 +78,12 @@ int get_delta(struct timespec *start, struct timespec *end) {
 }
 
 char charof(enum Type type) {
-  if (type == PLAYER1) {
-    return '1';
-  }
-  if (type == PLAYER2) {
-    return '2';
-  }
-  else if (type == BULLET) {
-    return '*';
-  }
-  else if (type == BLACKHOLE) {
-    return '@';
-  }
-  else {
-    return ' ';
+  switch (type) {
+    case PLAYER1:   return 'A';
+    case PLAYER2:   return 'T';
+    case BULLET:    return '*';
+    case BLACKHOLE: return '@';
+    default:        return ' ';
   }
 }
 
