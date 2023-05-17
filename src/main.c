@@ -58,36 +58,38 @@ void wcolour(WINDOW *win,int col) { wattron(win, COLOR_PAIR(col+1)); }
 void colour(int col) { wcolour(stdscr, col); }
 
 void create_ui(WINDOW *ui, int player) {
-  mvwprintw(ui,  0, 0, "┌────────┤ PLAYER %d ├────────┐", player);
-  mvwprintw(ui,  1, 0, "│ ┌──┐                  ┌──┐ │");
-  mvwprintw(ui,  2, 0, "│ │ |│  SCORE  [     ]  │| │ │");
-  mvwprintw(ui,  3, 0, "│ │||│ LIVES [        ] │||│ │");
-  mvwprintw(ui,  4, 0, "│ └──┘                  └──┘ │");
-  mvwprintw(ui,  5, 0, "└────────────────────────────┘");
-  mvwprintw(ui,  6, 0, "┌┤ VISUALS ├┐ ┌──┤ ENGINE ├──┐");
-  mvwprintw(ui,  7, 0, "│           │ │              │");
-  mvwprintw(ui,  8, 0, "│           │ │              │");
-  mvwprintw(ui,  9, 0, "│           │ │              │");
-  mvwprintw(ui, 10, 0, "│           │ │      ╶╴      │");
-  mvwprintw(ui, 11, 0, "│           │ └──────────────┘");
-  mvwprintw(ui, 12, 0, "│           │ ┌──────────────┐");
-  mvwprintw(ui, 13, 0, "│           │ │.~^~._.~^~._.~│");
-  mvwprintw(ui, 14, 0, "└───────────┘ └──────────────┘");
-  mvwprintw(ui, 15, 0, "┌─┤ HEADING ├─┐ ┌┤ WEAPONRY ├┐");
-  mvwprintw(ui, 16, 0, "│             │ │            │");
-  mvwprintw(ui, 17, 0, "│        ---  │ │ T╭╮T  ---  │");
-  mvwprintw(ui, 18, 0, "│   •         │ │ |├┤|       │");
-  mvwprintw(ui, 19, 0, "│        ---  │ │ |└┘|  ---  │");
-  mvwprintw(ui, 20, 0, "│             │ │ I==I       │");
-  mvwprintw(ui, 21, 0, "└─────────────┘ └────────────┘");
-  mvwprintw(ui, 22, 0, "┌────┤ STATUS READOUTS ├─────┐");
-  mvwprintw(ui, 23, 0, "│                            │");
-  mvwprintw(ui, 24, 0, "│ CURRENT VELOCITY           │");
-  mvwprintw(ui, 25, 0, "│ TRAVEL DIRECTION           │");
-  mvwprintw(ui, 26, 0, "│                            │");
-  mvwprintw(ui, 27, 0, "└────────────────────────────┘");
-  mvwprintw(ui, 28, 0, "┌────────────────────────────┐");
-  mvwprintw(ui, 29, 0, "└────────────────────────────┘");
+  mvwprintw(ui, 0, 0,
+    "┌────────┤ PLAYER %d ├────────┐"
+    "│ ┌──┐                  ┌──┐ │"
+    "│ │ |│  SCORE  [     ]  │| │ │"
+    "│ │||│ LIVES [        ] │||│ │"
+    "│ └──┘                  └──┘ │"
+    "└────────────────────────────┘"
+    "┌┤ VISUALS ├┐ ┌──┤ ENGINE ├──┐"
+    "│           │ │              │"
+    "│           │ │              │"
+    "│           │ │              │"
+    "│           │ │      ╶╴      │"
+    "│           │ └──────────────┘"
+    "│           │ ┌──────────────┐"
+    "│           │ │.~^~._.~^~._.~│"
+    "└───────────┘ └──────────────┘"
+    "┌─┤ HEADING ├─┐ ┌┤ WEAPONRY ├┐"
+    "│             │ │            │"
+    "│        ---  │ │ T╭╮T  ---  │"
+    "│   •         │ │ |├┤|       │"
+    "│        ---  │ │ |└┘|  ---  │"
+    "│             │ │ I==I       │"
+    "└─────────────┘ └────────────┘"
+    "┌────┤ STATUS READOUTS ├─────┐"
+    "│                            │"
+    "│ CURRENT VELOCITY           │"
+    "│ TRAVEL DIRECTION           │"
+    "│                            │"
+    "└────────────────────────────┘"
+    "┌────────────────────────────┐"
+    "└────────────────────────────┘"
+    , player);
 
 
   if (player == 1) {
