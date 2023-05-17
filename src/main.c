@@ -229,7 +229,7 @@ void update_physics(WINDOW* game_win, GameObject *objects, int delta, int frame)
     if (objects[i].type == PLAYER1 || objects[i].type == PLAYER2) {
       double dy = objects[i].y - objects[0].y;
       double dx = objects[i].x - objects[0].x;
-      double r2  = fabs(dy)*fabs(dy) + fabs(dx)*fabs(dx);
+      double r2 = fabs(dy)*fabs(dy) + fabs(dx)*fabs(dx);
       double r = sqrt(r2);
       double g = -2 / r2;
       double unity = dy / r;
@@ -237,8 +237,18 @@ void update_physics(WINDOW* game_win, GameObject *objects, int delta, int frame)
       objects[i].vely += g * unity * d;
       objects[i].velx += g * unitx * d;
 
-      if (r < 0.1) {
+      if (r < 0.5) {
         objects[i] = destroy(objects[i]);
+      }
+
+      dy = objects[i].y - objects[3-i].y;
+      dx = objects[i].x - objects[3-i].x;
+      r2 = fabs(dy)*fabs(dy) + fabs(dx)*fabs(dx);
+      r = sqrt(r2);
+
+      if (r < 1) {
+        objects[i] = destroy(objects[i]);
+        objects[3-i] = destroy(objects[3-i]);
       }
 
       double velxy = total_vel(objects[i]);
@@ -261,7 +271,7 @@ void update_physics(WINDOW* game_win, GameObject *objects, int delta, int frame)
         if (r < 1) {
           objects[j] = destroy(objects[j]);
           objects[i] = new_gameobject(ERR, 0, 0, 0, 0);
-          objects[-j+3].score += 200;
+          objects[3-j].score += 200;
         }
       }
     }
