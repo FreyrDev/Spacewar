@@ -54,9 +54,9 @@ void setup() {
 void wcolour(WINDOW *win,int col) { wattron(win, COLOR_PAIR(col+1)); }
 void colour(int col) { wcolour(stdscr, col); }
 
-void create_ui(WINDOW *ui, char title[]) {
+void create_ui(WINDOW *ui, int player) {
   box(ui, 0, 0);
-  mvwprintw(ui, 0, 4, title);
+  mvwprintw(ui, 0, 4, "┤ PLAYER %d ├", player);
   mvwprintw(ui, 4, 6, "┌───┤ ENGINE ├───┐ ┌────────┐");
   mvwprintw(ui, 5, 6, "│                │ │ooOo00oo│");
   mvwprintw(ui, 6, 6, "│                │ │00OoO0Oo│");
@@ -71,6 +71,21 @@ void create_ui(WINDOW *ui, char title[]) {
   mvwprintw(ui, 16, 6, "│ Current Heading:          │");
   mvwprintw(ui, 17, 6, "│                           │");
   mvwprintw(ui, 18, 6, "└───────────────────────────┘");
+
+  if (player == 1) {
+    mvwprintw(ui, 20, 6, "  /!\\  ");
+    mvwprintw(ui, 21, 6, " (   ) ");
+    mvwprintw(ui, 22, 6, " / θ \\");
+    mvwprintw(ui, 23, 6, "( ___ )");
+    mvwprintw(ui, 24, 6, "/_\\ /_\\");
+  }
+  else {
+    mvwprintw(ui, 20, 6, " __!__ ");
+    mvwprintw(ui, 21, 6, "(_   _)");
+    mvwprintw(ui, 22, 6, "  |θ|  ");
+    mvwprintw(ui, 23, 6, "  ( )  ");
+    mvwprintw(ui, 24, 6, "  /_\\ ");
+  }
   wrefresh(ui);
 }
 
@@ -306,8 +321,8 @@ int main() {
   wcolour(ui1, 0);
   wcolour(ui2, 0);
 
-  create_ui(ui1, "┤ PLAYER 1 ├");
-  create_ui(ui2, "┤ PLAYER 2 ├");
+  create_ui(ui1, 1);
+  create_ui(ui2, 2);
 
   // Initiate array of all game objects (the black hole, the players, and empty spots for bullets to spawn);
   GameObject game_objects[5];
