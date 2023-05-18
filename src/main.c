@@ -44,8 +44,7 @@ void create_ui(WINDOW *ui, int player) {
   mvwprintw(ui, 0, 0,
     "┌────────┤ PLAYER %d ├────────┐"
     "│ ┌──┐                  ┌──┐ │"
-    "│ │ |│  SCORE  [     ]  │| │ │"
-    "│ │||│ LIVES [        ] │||│ │"
+    "│ │()│  SCORE  [     ]  │()│ │"
     "│ └──┘                  └──┘ │"
     "└────────────────────────────┘"
     "┌┤ VISUALS ├┐ ┌──┤ ENGINE ├──┐"
@@ -74,18 +73,18 @@ void create_ui(WINDOW *ui, int player) {
 
 
   if (player == 1) {
-    mvwprintw(ui,  8, 3, "  /!\\  ");
-    mvwprintw(ui,  9, 3, " (   ) ");
-    mvwprintw(ui, 10, 3, " / θ \\");
-    mvwprintw(ui, 11, 3, "( ___ )");
-    mvwprintw(ui, 12, 3, "/_\\ /_\\");
+    mvwprintw(ui,  7, 3, "  /!\\  ");
+    mvwprintw(ui,  8, 3, " (   ) ");
+    mvwprintw(ui,  9, 3, " / θ \\");
+    mvwprintw(ui, 10, 3, "( ___ )");
+    mvwprintw(ui, 11, 3, "/_\\ /_\\");
   }
   else {
-    mvwprintw(ui,  8, 3, " __!__ ");
-    mvwprintw(ui,  9, 3, "(_   _)");
-    mvwprintw(ui, 10, 3, "  |θ|  ");
-    mvwprintw(ui, 11, 3, "  ( )  ");
-    mvwprintw(ui, 12, 3, "  /_\\ ");
+    mvwprintw(ui,  7, 3, " __!__ ");
+    mvwprintw(ui,  8, 3, "(_   _)");
+    mvwprintw(ui,  9, 3, "  |θ|  ");
+    mvwprintw(ui, 10, 3, "  ( )  ");
+    mvwprintw(ui, 11, 3, "  /_\\ ");
   }
   wrefresh(ui);
 }
@@ -223,119 +222,119 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
   mvwprintw(ui2, 2, 16, "%05d", objects[2].score);
 
   if (objects[3].type == ERR) {
-    mvwprintw(ui1, 8, 6, "!");
-    mvwprintw(ui1, 17, 19, "╭╮");
-    mvwprintw(ui1, 18, 19, "├┤");
-    mvwprintw(ui1, 19, 19, "└┘");
-    mvwprintw(ui1, 18, 23, "READY");
+    mvwprintw(ui1, 7, 6, "!");
+    mvwprintw(ui1, 16, 19, "╭╮");
+    mvwprintw(ui1, 17, 19, "├┤");
+    mvwprintw(ui1, 18, 19, "└┘");
+    mvwprintw(ui1, 17, 23, "READY");
   }
   else {
     if (objects[3].score > INT_MAX/2) {
-      mvwprintw(ui1, 8, 6, ".");
+      mvwprintw(ui1, 7, 6, ".");
+      mvwprintw(ui1, 16, 19, "  ");
       mvwprintw(ui1, 17, 19, "  ");
       mvwprintw(ui1, 18, 19, "  ");
-      mvwprintw(ui1, 19, 19, "  ");
-      mvwprintw(ui1, 18, 23, "     ");
+      mvwprintw(ui1, 17, 23, "     ");
     }
     else if (objects[3].score > INT_MAX/4) {
-      mvwprintw(ui1, 8, 6, ".");
-      mvwprintw(ui1, 17, 19, "  ");
-      mvwprintw(ui1, 18, 19, "  ");
-      mvwprintw(ui1, 19, 19, "╭╮");
-      mvwprintw(ui1, 18, 23, "     ");
-    }
-    else {
-      mvwprintw(ui1, 8, 6, ".");
+      mvwprintw(ui1, 7, 6, ".");
+      mvwprintw(ui1, 16, 19, "  ");
       mvwprintw(ui1, 17, 19, "  ");
       mvwprintw(ui1, 18, 19, "╭╮");
-      mvwprintw(ui1, 19, 19, "├┤");
-      mvwprintw(ui1, 18, 23, "     ");
+      mvwprintw(ui1, 17, 23, "     ");
+    }
+    else {
+      mvwprintw(ui1, 7, 6, ".");
+      mvwprintw(ui1, 16, 19, "  ");
+      mvwprintw(ui1, 17, 19, "╭╮");
+      mvwprintw(ui1, 18, 19, "├┤");
+      mvwprintw(ui1, 17, 23, "     ");
     }
   }
   if (objects[4].type == ERR) {
-    mvwprintw(ui2, 8, 6, "!");
-    mvwprintw(ui2, 17, 19, "╭╮");
-    mvwprintw(ui2, 18, 19, "├┤");
-    mvwprintw(ui2, 19, 19, "└┘");
-    mvwprintw(ui2, 18, 23, "READY");
+    mvwprintw(ui2, 7, 6, "!");
+    mvwprintw(ui2, 16, 19, "╭╮");
+    mvwprintw(ui2, 17, 19, "├┤");
+    mvwprintw(ui2, 18, 19, "└┘");
+    mvwprintw(ui2, 17, 23, "READY");
   }
   else {
     if (objects[4].score > INT_MAX/2) {
-      mvwprintw(ui2, 8, 6, ".");
+      mvwprintw(ui2, 7, 6, ".");
+      mvwprintw(ui2, 16, 19, "  ");
       mvwprintw(ui2, 17, 19, "  ");
       mvwprintw(ui2, 18, 19, "  ");
-      mvwprintw(ui2, 19, 19, "  ");
-      mvwprintw(ui2, 18, 23, "     ");
+      mvwprintw(ui2, 17, 23, "     ");
     }
     else if (objects[4].score > INT_MAX/4) {
-      mvwprintw(ui2, 8, 6, ".");
-      mvwprintw(ui2, 17, 19, "  ");
-      mvwprintw(ui2, 18, 19, "  ");
-      mvwprintw(ui2, 19, 19, "╭╮");
-      mvwprintw(ui2, 18, 23, "     ");
-    }
-    else {
-      mvwprintw(ui2, 8, 6, ".");
+      mvwprintw(ui2, 7, 6, ".");
+      mvwprintw(ui2, 16, 19, "  ");
       mvwprintw(ui2, 17, 19, "  ");
       mvwprintw(ui2, 18, 19, "╭╮");
-      mvwprintw(ui2, 19, 19, "├┤");
-      mvwprintw(ui2, 18, 23, "     ");
+      mvwprintw(ui2, 17, 23, "     ");
+    }
+    else {
+      mvwprintw(ui2, 7, 6, ".");
+      mvwprintw(ui2, 16, 19, "  ");
+      mvwprintw(ui2, 17, 19, "╭╮");
+      mvwprintw(ui2, 18, 19, "├┤");
+      mvwprintw(ui2, 17, 23, "     ");
     }
   }
 
   if (objects[1].acc) {
-    mvwprintw(ui1,  8, 16, "MAIN ENGINES");
-    mvwprintw(ui1,  9, 16, " FULL POWER ");
-    mvwprintw(ui1, 10, 16, "! ! !╶╴! ! !");
-    mvwaddch(ui1, 13, 4, "^\"*8°"[rand()%5]);
-    mvwaddch(ui1, 13, 8, "^\"*8°"[rand()%5]);
+    mvwprintw(ui1, 7, 16, "MAIN ENGINES");
+    mvwprintw(ui1, 8, 16, " FULL POWER ");
+    mvwprintw(ui1, 9, 16, "! ! !╶╴! ! !");
+    mvwaddch(ui1, 12, 4, "^\"*8°"[rand()%5]);
+    mvwaddch(ui1, 12, 8, "^\"*8°"[rand()%5]);
   }
   else {
-    mvwprintw(ui1,  8, 16, "            ");
-    mvwprintw(ui1,  9, 16, "            ");
-    mvwprintw(ui1, 10, 16, "     ╶╴     ");
-    mvwprintw(ui1, 13,  4, "     ");
+    mvwprintw(ui1, 7, 16, "            ");
+    mvwprintw(ui1, 8, 16, "            ");
+    mvwprintw(ui1, 9, 16, "     ╶╴     ");
+    mvwprintw(ui1, 12,  4, "     ");
   }
   if (objects[2].acc) {
-    mvwprintw(ui2,  8, 16, "MAIN ENGINES");
-    mvwprintw(ui2,  9, 16, " FULL POWER ");
-    mvwprintw(ui2, 10, 16, "! ! !╶╴! ! !");
-    mvwaddch(ui2, 13, 6, "^\"*8°"[rand()%5]);
+    mvwprintw(ui2, 7, 16, "MAIN ENGINES");
+    mvwprintw(ui2, 8, 16, " FULL POWER ");
+    mvwprintw(ui2, 9, 16, "! ! !╶╴! ! !");
+    mvwaddch(ui2, 12, 6, "^\"*8°"[rand()%5]);
   }
   else {
-    mvwprintw(ui2,  8, 16, "            ");
-    mvwprintw(ui2,  9, 16, "            ");
-    mvwprintw(ui2, 10, 16, "     ╶╴     ");
-    mvwprintw(ui2, 13,  4, "     ");
+    mvwprintw(ui2, 7, 16, "            ");
+    mvwprintw(ui2, 8, 16, "            ");
+    mvwprintw(ui2, 9, 16, "     ╶╴     ");
+    mvwprintw(ui2, 12,  4, "     ");
   }
 
-  mvwprintw(ui1, 17, 2, "· · ·");
-  mvwprintw(ui1, 18, 2, "· • ·");
-  mvwprintw(ui1, 19, 2, "· · ·");
-  mvwprintw(ui2, 17, 2, "     ");
-  mvwprintw(ui2, 18, 2, "  •  ");
-  mvwprintw(ui2, 19, 2, "     ");
+  mvwprintw(ui1, 16, 2, "· · ·");
+  mvwprintw(ui1, 17, 2, "· • ·");
+  mvwprintw(ui1, 18, 2, "· · ·");
+  mvwprintw(ui2, 16, 2, "     ");
+  mvwprintw(ui2, 17, 2, "  •  ");
+  mvwprintw(ui2, 18, 2, "     ");
 
-  mvwprintw(ui1, 18+round(thrust_vector(objects[1].dir, 'y')), 4+2*round(thrust_vector(objects[1].dir, 'x')), "%lc", charofdir(objects[1].dir));
-  mvwprintw(ui2, 18+round(thrust_vector(objects[2].dir, 'y')), 4+2*round(thrust_vector(objects[2].dir, 'x')), "%lc", charofdir(objects[2].dir));
+  mvwprintw(ui1, 17+round(thrust_vector(objects[1].dir, 'y')), 4+2*round(thrust_vector(objects[1].dir, 'x')), "%lc", charofdir(objects[1].dir));
+  mvwprintw(ui2, 17+round(thrust_vector(objects[2].dir, 'y')), 4+2*round(thrust_vector(objects[2].dir, 'x')), "%lc", charofdir(objects[2].dir));
 
-  mvwprintw(ui1, 18, 9, "%03d°", objects[1].dir * 45);
-  mvwprintw(ui2, 18, 9, "%03d°", objects[2].dir * 45);
+  mvwprintw(ui1, 17, 9, "%03d°", objects[1].dir * 45);
+  mvwprintw(ui2, 17, 9, "%03d°", objects[2].dir * 45);
 
   if (total_vel(objects[1]) > 0.995) {
-    mvwprintw(ui1, 24, 20, "100.000%%");
+    mvwprintw(ui1, 23, 20, "100.000%%");
   }
   else {
-    mvwprintw(ui1, 24, 20, "%07.3f%%", total_vel(objects[1]) * 100);
+    mvwprintw(ui1, 23, 20, "%07.3f%%", total_vel(objects[1]) * 100);
   }
   if (total_vel(objects[2]) > 0.995) {
-    mvwprintw(ui2, 24, 20, "100.000%%");
+    mvwprintw(ui2, 23, 20, "100.000%%");
   }
   else {
-    mvwprintw(ui2, 24, 20, "%07.3f%%", total_vel(objects[2]) * 100);
+    mvwprintw(ui2, 23, 20, "%07.3f%%", total_vel(objects[2]) * 100);
   }
-  mvwprintw(ui1, 25, 20, "%07.3f°", fmod(atan2(objects[1].vely, objects[1].velx) * 180/M_PI + 450, 360));
-  mvwprintw(ui2, 25, 20, "%07.3f°", fmod(atan2(objects[2].vely, objects[2].velx) * 180/M_PI + 450, 360));
+  mvwprintw(ui1, 24, 20, "%07.3f°", fmod(atan2(objects[1].vely, objects[1].velx) * 180/M_PI + 450, 360));
+  mvwprintw(ui2, 24, 20, "%07.3f°", fmod(atan2(objects[2].vely, objects[2].velx) * 180/M_PI + 450, 360));
 
   wnoutrefresh(ui1);
   wnoutrefresh(ui2);
