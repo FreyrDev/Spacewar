@@ -93,10 +93,10 @@ void create_ui(WINDOW *ui, int player) {
 // Automates resetting the players position when they are destroyed
 GameObject destroy(GameObject player) {
   if (player.type == PLAYER1) {
-    return new_gameobject(PLAYER1, P1_Y, P1_X, N, player.score-50);
+    return new_gameobject(PLAYER1, P1_Y, P1_X, NW, player.score-50);
   }
   else if (player.type == PLAYER2) {
-    return new_gameobject(PLAYER2, P2_Y, P2_X, S, player.score-50);
+    return new_gameobject(PLAYER2, P2_Y, P2_X, SE, player.score-50);
   }
   else {
     return err_gameobject();
@@ -203,6 +203,8 @@ void update_physics(WINDOW* game_win, GameObject *objects, int delta, int frame)
  */
 
 void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) {
+  WINDOW *ui[] = { ui1, ui2 };
+
   werase(game);
   box(game, 0, 0);
 
@@ -218,123 +220,77 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
   }
   wnoutrefresh(game);
 
-  mvwprintw(ui1, 2, 16, "%05d", objects[1].score);
-  mvwprintw(ui2, 2, 16, "%05d", objects[2].score);
+  for (int i=0; i<2; i++) {
+    mvwprintw(ui[i], 2, 16, "%05d", objects[i+1].score);
 
-  if (objects[3].type == ERR) {
-    mvwprintw(ui1, 7, 6, "!");
-    mvwprintw(ui1, 16, 19, "╭╮");
-    mvwprintw(ui1, 17, 19, "├┤");
-    mvwprintw(ui1, 18, 19, "└┘");
-    mvwprintw(ui1, 17, 23, "READY");
-  }
-  else {
-    if (objects[3].score > INT_MAX/2) {
-      mvwprintw(ui1, 7, 6, ".");
-      mvwprintw(ui1, 16, 19, "  ");
-      mvwprintw(ui1, 17, 19, "  ");
-      mvwprintw(ui1, 18, 19, "  ");
-      mvwprintw(ui1, 17, 23, "     ");
-    }
-    else if (objects[3].score > INT_MAX/4) {
-      mvwprintw(ui1, 7, 6, ".");
-      mvwprintw(ui1, 16, 19, "  ");
-      mvwprintw(ui1, 17, 19, "  ");
-      mvwprintw(ui1, 18, 19, "╭╮");
-      mvwprintw(ui1, 17, 23, "     ");
+    if (objects[i+3].type == ERR) {
+      mvwprintw(ui[i], 7, 6, "!");
+      mvwprintw(ui[i], 16, 19, "╭╮");
+      mvwprintw(ui[i], 17, 19, "├┤");
+      mvwprintw(ui[i], 18, 19, "└┘");
+      mvwprintw(ui[i], 17, 23, "READY");
     }
     else {
-      mvwprintw(ui1, 7, 6, ".");
-      mvwprintw(ui1, 16, 19, "  ");
-      mvwprintw(ui1, 17, 19, "╭╮");
-      mvwprintw(ui1, 18, 19, "├┤");
-      mvwprintw(ui1, 17, 23, "     ");
+      if (objects[i+3].score > INT_MAX/2) {
+        mvwprintw(ui[i], 7, 6, ".");
+        mvwprintw(ui[i], 16, 19, "  ");
+        mvwprintw(ui[i], 17, 19, "  ");
+        mvwprintw(ui[i], 18, 19, "  ");
+        mvwprintw(ui[i], 17, 23, "     ");
+      }
+      else if (objects[i+3].score > INT_MAX/4) {
+        mvwprintw(ui[i], 7, 6, ".");
+        mvwprintw(ui[i], 16, 19, "  ");
+        mvwprintw(ui[i], 17, 19, "  ");
+        mvwprintw(ui[i], 18, 19, "╭╮");
+        mvwprintw(ui[i], 17, 23, "     ");
+      }
+      else {
+        mvwprintw(ui[i], 7, 6, ".");
+        mvwprintw(ui[i], 16, 19, "  ");
+        mvwprintw(ui[i], 17, 19, "╭╮");
+        mvwprintw(ui[i], 18, 19, "├┤");
+        mvwprintw(ui[i], 17, 23, "     ");
+      }
     }
-  }
-  if (objects[4].type == ERR) {
-    mvwprintw(ui2, 7, 6, "!");
-    mvwprintw(ui2, 16, 19, "╭╮");
-    mvwprintw(ui2, 17, 19, "├┤");
-    mvwprintw(ui2, 18, 19, "└┘");
-    mvwprintw(ui2, 17, 23, "READY");
-  }
-  else {
-    if (objects[4].score > INT_MAX/2) {
-      mvwprintw(ui2, 7, 6, ".");
-      mvwprintw(ui2, 16, 19, "  ");
-      mvwprintw(ui2, 17, 19, "  ");
-      mvwprintw(ui2, 18, 19, "  ");
-      mvwprintw(ui2, 17, 23, "     ");
-    }
-    else if (objects[4].score > INT_MAX/4) {
-      mvwprintw(ui2, 7, 6, ".");
-      mvwprintw(ui2, 16, 19, "  ");
-      mvwprintw(ui2, 17, 19, "  ");
-      mvwprintw(ui2, 18, 19, "╭╮");
-      mvwprintw(ui2, 17, 23, "     ");
+
+    if (objects[i+1].acc) {
+      mvwprintw(ui[i], 7, 16, "MAIN ENGINES");
+      mvwprintw(ui[i], 8, 16, " FULL POWER ");
+      mvwprintw(ui[i], 9, 16, "! ! !╶╴! ! !");
     }
     else {
-      mvwprintw(ui2, 7, 6, ".");
-      mvwprintw(ui2, 16, 19, "  ");
-      mvwprintw(ui2, 17, 19, "╭╮");
-      mvwprintw(ui2, 18, 19, "├┤");
-      mvwprintw(ui2, 17, 23, "     ");
+      mvwprintw(ui[i], 7, 16, "            ");
+      mvwprintw(ui[i], 8, 16, "            ");
+      mvwprintw(ui[i], 9, 16, "     ╶╴     ");
+      mvwprintw(ui[i], 12,  4, "     ");
     }
+
+    mvwprintw(ui[i], 16, 2, "· · ·");
+    mvwprintw(ui[i], 17, 2, "· • ·");
+    mvwprintw(ui[i], 18, 2, "· · ·");
+
+    mvwprintw(ui[i], 17+round(thrust_vector(objects[i+1].dir, 'y')), 4+2*round(thrust_vector(objects[i+1].dir, 'x')), "%lc", charofdir(objects[i+1].dir));
+
+    mvwprintw(ui[i], 17, 9, "%03d°", objects[i+1].dir * 45);
+
+    if (total_vel(objects[i+1]) > 0.995) {
+      mvwprintw(ui[i], 23, 20, "100.000%%");
+    } 
+    else {
+      mvwprintw(ui[i], 23, 20, "%07.3f%%", total_vel(objects[i+1]) * 100);
+    }
+
+    mvwprintw(ui[i], 24, 20, "%07.3f°", fmod(atan2(objects[i+1].vely, objects[i+1].velx) * 180/M_PI + 450, 360));
   }
 
   if (objects[1].acc) {
-    mvwprintw(ui1, 7, 16, "MAIN ENGINES");
-    mvwprintw(ui1, 8, 16, " FULL POWER ");
-    mvwprintw(ui1, 9, 16, "! ! !╶╴! ! !");
     mvwaddch(ui1, 12, 4, "^\"*8°"[rand()%5]);
     mvwaddch(ui1, 12, 8, "^\"*8°"[rand()%5]);
   }
-  else {
-    mvwprintw(ui1, 7, 16, "            ");
-    mvwprintw(ui1, 8, 16, "            ");
-    mvwprintw(ui1, 9, 16, "     ╶╴     ");
-    mvwprintw(ui1, 12,  4, "     ");
-  }
   if (objects[2].acc) {
-    mvwprintw(ui2, 7, 16, "MAIN ENGINES");
-    mvwprintw(ui2, 8, 16, " FULL POWER ");
-    mvwprintw(ui2, 9, 16, "! ! !╶╴! ! !");
     mvwaddch(ui2, 12, 6, "^\"*8°"[rand()%5]);
   }
-  else {
-    mvwprintw(ui2, 7, 16, "            ");
-    mvwprintw(ui2, 8, 16, "            ");
-    mvwprintw(ui2, 9, 16, "     ╶╴     ");
-    mvwprintw(ui2, 12,  4, "     ");
-  }
-
-  mvwprintw(ui1, 16, 2, "· · ·");
-  mvwprintw(ui1, 17, 2, "· • ·");
-  mvwprintw(ui1, 18, 2, "· · ·");
-  mvwprintw(ui2, 16, 2, "     ");
-  mvwprintw(ui2, 17, 2, "  •  ");
-  mvwprintw(ui2, 18, 2, "     ");
-
-  mvwprintw(ui1, 17+round(thrust_vector(objects[1].dir, 'y')), 4+2*round(thrust_vector(objects[1].dir, 'x')), "%lc", charofdir(objects[1].dir));
-  mvwprintw(ui2, 17+round(thrust_vector(objects[2].dir, 'y')), 4+2*round(thrust_vector(objects[2].dir, 'x')), "%lc", charofdir(objects[2].dir));
-
-  mvwprintw(ui1, 17, 9, "%03d°", objects[1].dir * 45);
-  mvwprintw(ui2, 17, 9, "%03d°", objects[2].dir * 45);
-
-  if (total_vel(objects[1]) > 0.995) {
-    mvwprintw(ui1, 23, 20, "100.000%%");
-  }
-  else {
-    mvwprintw(ui1, 23, 20, "%07.3f%%", total_vel(objects[1]) * 100);
-  }
-  if (total_vel(objects[2]) > 0.995) {
-    mvwprintw(ui2, 23, 20, "100.000%%");
-  }
-  else {
-    mvwprintw(ui2, 23, 20, "%07.3f%%", total_vel(objects[2]) * 100);
-  }
-  mvwprintw(ui1, 24, 20, "%07.3f°", fmod(atan2(objects[1].vely, objects[1].velx) * 180/M_PI + 450, 360));
-  mvwprintw(ui2, 24, 20, "%07.3f°", fmod(atan2(objects[2].vely, objects[2].velx) * 180/M_PI + 450, 360));
 
   wnoutrefresh(ui1);
   wnoutrefresh(ui2);
@@ -372,8 +328,8 @@ int main() {
   // Initiate array of all game objects (the black hole, the players, and empty spots for torpedoes to spawn);
   GameObject game_objects[5];
   game_objects[0] = new_gameobject(BLACKHOLE, (double)gameh+0.5, (double)gamew/2, N, 0);
-  game_objects[1] = new_gameobject(PLAYER1, P1_Y, P1_X, N, 0);
-  game_objects[2] = new_gameobject(PLAYER2, P2_Y, P2_X, S, 0);
+  game_objects[1] = new_gameobject(PLAYER1, P1_Y, P1_X, NW, 0);
+  game_objects[2] = new_gameobject(PLAYER2, P2_Y, P2_X, SE, 0);
   game_objects[3] = err_gameobject();
   game_objects[4] = err_gameobject();
 
