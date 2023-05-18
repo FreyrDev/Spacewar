@@ -87,8 +87,6 @@ void create_ui(WINDOW *ui, int player) {
     "│ TRAVEL DIRECTION           │"
     "│                            │"
     "└────────────────────────────┘"
-    "┌────────────────────────────┐"
-    "└────────────────────────────┘"
     , player);
 
 
@@ -313,11 +311,27 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
     mvwprintw(ui1, 18, 23, "READY");
   }
   else {
-    mvwprintw(ui1, 8, 6, ".");
-    mvwprintw(ui1, 17, 19, "  ");
-    mvwprintw(ui1, 18, 19, "  ");
-    mvwprintw(ui1, 19, 19, "  ");
-    mvwprintw(ui1, 18, 23, "     ");
+    if (objects[3].score > INT_MAX/2) {
+      mvwprintw(ui1, 8, 6, ".");
+      mvwprintw(ui1, 17, 19, "  ");
+      mvwprintw(ui1, 18, 19, "  ");
+      mvwprintw(ui1, 19, 19, "  ");
+      mvwprintw(ui1, 18, 23, "     ");
+    }
+    else if (objects[3].score > INT_MAX/4) {
+      mvwprintw(ui1, 8, 6, ".");
+      mvwprintw(ui1, 17, 19, "  ");
+      mvwprintw(ui1, 18, 19, "  ");
+      mvwprintw(ui1, 19, 19, "╭╮");
+      mvwprintw(ui1, 18, 23, "     ");
+    }
+    else {
+      mvwprintw(ui1, 8, 6, ".");
+      mvwprintw(ui1, 17, 19, "  ");
+      mvwprintw(ui1, 18, 19, "╭╮");
+      mvwprintw(ui1, 19, 19, "├┤");
+      mvwprintw(ui1, 18, 23, "     ");
+    }
   }
   if (objects[4].type == ERR) {
     mvwprintw(ui2, 8, 6, "!");
@@ -327,18 +341,35 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
     mvwprintw(ui2, 18, 23, "READY");
   }
   else {
-    mvwprintw(ui2, 8, 6, ".");
-    mvwprintw(ui2, 17, 19, "  ");
-    mvwprintw(ui2, 18, 19, "  ");
-    mvwprintw(ui2, 19, 19, "  ");
-    mvwprintw(ui2, 18, 23, "     ");
+    if (objects[4].score > INT_MAX/2) {
+      mvwprintw(ui2, 8, 6, ".");
+      mvwprintw(ui2, 17, 19, "  ");
+      mvwprintw(ui2, 18, 19, "  ");
+      mvwprintw(ui2, 19, 19, "  ");
+      mvwprintw(ui2, 18, 23, "     ");
+    }
+    else if (objects[4].score > INT_MAX/4) {
+      mvwprintw(ui2, 8, 6, ".");
+      mvwprintw(ui2, 17, 19, "  ");
+      mvwprintw(ui2, 18, 19, "  ");
+      mvwprintw(ui2, 19, 19, "╭╮");
+      mvwprintw(ui2, 18, 23, "     ");
+    }
+    else {
+      mvwprintw(ui2, 8, 6, ".");
+      mvwprintw(ui2, 17, 19, "  ");
+      mvwprintw(ui2, 18, 19, "╭╮");
+      mvwprintw(ui2, 19, 19, "├┤");
+      mvwprintw(ui2, 18, 23, "     ");
+    }
   }
 
   if (objects[1].acc) {
     mvwprintw(ui1,  8, 16, "MAIN ENGINES");
     mvwprintw(ui1,  9, 16, " FULL POWER ");
     mvwprintw(ui1, 10, 16, "! ! !╶╴! ! !");
-    mvwprintw(ui1, 13,  4, "^   ^");
+    mvwaddch(ui1, 13, 4, "^\"*8°"[rand()%5]);
+    mvwaddch(ui1, 13, 8, "^\"*8°"[rand()%5]);
   }
   else {
     mvwprintw(ui1,  8, 16, "            ");
@@ -350,7 +381,7 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
     mvwprintw(ui2,  8, 16, "MAIN ENGINES");
     mvwprintw(ui2,  9, 16, " FULL POWER ");
     mvwprintw(ui2, 10, 16, "! ! !╶╴! ! !");
-    mvwprintw(ui2, 13,  4, "  ^  ");
+    mvwaddch(ui2, 13, 6, "^\"*8°"[rand()%5]);
   }
   else {
     mvwprintw(ui2,  8, 16, "            ");
@@ -359,9 +390,9 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
     mvwprintw(ui2, 13,  4, "     ");
   }
 
-  mvwprintw(ui1, 17, 2, "     ");
-  mvwprintw(ui1, 18, 2, "  •  ");
-  mvwprintw(ui1, 19, 2, "     ");
+  mvwprintw(ui1, 17, 2, "· · ·");
+  mvwprintw(ui1, 18, 2, "· • ·");
+  mvwprintw(ui1, 19, 2, "· · ·");
   mvwprintw(ui2, 17, 2, "     ");
   mvwprintw(ui2, 18, 2, "  •  ");
   mvwprintw(ui2, 19, 2, "     ");
@@ -404,8 +435,8 @@ int main() {
   int gamew = 101;
   int uisize = 30;
   WINDOW *game = newwin(gameh, gamew, (scrh-gameh)/2, (scrw-gamew)/2);
-  WINDOW *ui1 = newwin(uisize, uisize, (scrh-gameh)/2, (scrw-uisize)/2-69);
-  WINDOW *ui2 = newwin(uisize, uisize, (scrh-gameh)/2, (scrw-uisize)/2+69);
+  WINDOW *ui1 = newwin(uisize-2, uisize, (scrh-gameh)/2, (scrw-uisize)/2-69);
+  WINDOW *ui2 = newwin(uisize-2, uisize, (scrh-gameh)/2, (scrw-uisize)/2+69);
   wcolour(game, 0);
   wcolour(ui1, 0);
   wcolour(ui2, 0);
