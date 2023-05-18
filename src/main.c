@@ -1,38 +1,18 @@
-#include <ncurses.h>
-#include <locale.h>
-#include <time.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <math.h>
-#include <limits.h>
-
-// This is just because I was writing it on Windows and the error was annoying me
-#ifndef CLOCK_MONOTONIC_RAW
-  #define CLOCK_MONOTONIC_RAW 0
-#endif
-#ifndef M_PI
-  #define M_PI 3.14159265358979323846
-#endif
+#include "utils.h"
 
 #define PHYSICS_SPEED 1.0
 #define FRAMERATE 50
 
-enum Type {
-  BLACKHOLE,
-  PLAYER1,
-  PLAYER2,
-  BULLET
-};
+#define P1_Y 76.5
+#define P1_X 25.5
+#define P2_Y 26.5
+#define P2_X 75.5
 
-enum Dir {
-  N, NE, E, SE, S, SW, W, NW
-};
 
-typedef struct GameObject {
-  enum Type type;
-  double y, x, y1, x1, y2, x2, y3, x3, vely, velx;
-  int acc, dir, score;
-} GameObject;
+/* SETUP
+ * Calls all required functions for ncurses setup so the screen displays correctly
+ * and inputs are read correctly, as well as configuring the terminal colours
+ */
 
 void setup() {
   setlocale(LC_ALL, "");
@@ -54,8 +34,11 @@ void setup() {
   init_pair(3, COLOR_YELLOW, COLOR_BLACK);
 }
 
-void wcolour(WINDOW *win,int col) { wattron(win, COLOR_PAIR(col+1)); }
-void colour(int col) { wcolour(stdscr, col); }
+
+/* CREATE UI
+ * Prints the static parts of the players' HUDs, so they don't have to be reprinted every frame
+ * Also includes the player specific spaceship for the visuals section
+ */
 
 void create_ui(WINDOW *ui, int player) {
   mvwprintw(ui, 0, 0,
@@ -76,9 +59,9 @@ void create_ui(WINDOW *ui, int player) {
     "└───────────┘ └──────────────┘"
     "┌─┤ HEADING ├─┐ ┌┤ WEAPONRY ├┐"
     "│             │ │            │"
-    "│        ---  │ │ T╭╮T  ---  │"
-    "│   •         │ │ |├┤|       │"
-    "│        ---  │ │ |└┘|  ---  │"
+    "│        ---  │ │ T  T  ---  │"
+    "│   •         │ │ |  |       │"
+    "│        ---  │ │ |  |  ---  │"
     "│             │ │ I==I       │"
     "└─────────────┘ └────────────┘"
     "┌────┤ STATUS READOUTS ├─────┐"
@@ -107,101 +90,31 @@ void create_ui(WINDOW *ui, int player) {
   wrefresh(ui);
 }
 
-int get_delta(struct timespec *start, struct timespec *end) {
-  int result = 0;
-  result += end->tv_sec - start->tv_sec;
-  result *= 1000000000;
-  result += end->tv_nsec - start->tv_nsec;
-}
 
-wchar_t charof(enum Type type) {
-  switch (type) {
-    case PLAYER1:   return L'A';
-    case PLAYER2:   return L'T';
-    case BULLET:    return L'·';
-    case BLACKHOLE: return L'@';
-    default:        return L' ';
-  }
-}
-
-wchar_t charofdir(enum Dir dir) {
-  switch (dir) {
-    case N:  return L'↑';
-    case NE: return L'↗';
-    case E:  return L'→';
-    case SE: return L'↘';
-    case S:  return L'↓';
-    case SW: return L'↙';
-    case W:  return L'←';
-    case NW: return L'↖';
-  }
-}
-
-GameObject new_gameobject(enum Type type, double y, double x, enum Dir dir, int score) {
-  return (GameObject){type, y, x, y, x, y, x, y, x, 0, 0, 0, dir, score};
-}
-
-double total_vel(GameObject object) {
-  return object.vely*object.vely + object.velx*object.velx;
-}
-
-double thrust_vector(int object_dir, char axis) {
-  double magnitude;
-  double direction;
-
-  switch (object_dir%2) {
-    case 0: magnitude = 1;         break;
-    case 1: magnitude = 1/sqrt(2); break;
-  }
-  
-  if (axis == 'y') {
-    switch (object_dir) {
-      case N:
-      case NE:
-      case NW:
-        direction = -1;
-        break;
-      case S:
-      case SE:
-      case SW:
-        direction = 1;
-        break;
-      case E:
-      case W:
-        direction = 0;
-        break;
-    }
-  }
-  else {
-    switch (object_dir) {
-      case W:
-      case NW:
-      case SW:
-        direction = -1;
-        break;
-      case E:
-      case NE:
-      case SE:
-        direction = 1;
-        break;
-      case N:
-      case S:
-        direction = 0;
-        break;
-    }
-  }
-
-  return magnitude * direction;
-}
-
+// Automates resetting the players position when they are destroyed
 GameObject destroy(GameObject player) {
   if (player.type == PLAYER1) {
-    return new_gameobject(PLAYER1, 76.5, 25.5, N, player.score-50);
+    return new_gameobject(PLAYER1, P1_Y, P1_X, N, player.score-50);
+  }
+  else if (player.type == PLAYER2) {
+    return new_gameobject(PLAYER2, P2_Y, P2_X, S, player.score-50);
   }
   else {
-    return new_gameobject(PLAYER2, 26.5, 75.5, S, player.score-50);
+    return err_gameobject();
   }
 }
+
+
+/* UPDATE PHYSICS
+ * Steps all physics on each frame, with delta since last frame to correct for frametime differences
+ * Includes:
+ * - Calculating trail positions
+ * - Applying engine acceleration
+ * - Applying gravity to player spaceships
+ * - Capping player speed
+ * - Calculating collisions for players and bullets
+ * - Moving players to opposite edge of window if bounds exceeded
+ */
 
 void update_physics(WINDOW* game_win, GameObject *objects, int delta, int frame) {
   double d = (double)delta/33333333.3 * PHYSICS_SPEED;
@@ -259,7 +172,7 @@ void update_physics(WINDOW* game_win, GameObject *objects, int delta, int frame)
     if (objects[i].type == BULLET) {
       objects[i].score -= delta;
       if (objects[i].score < 0) {
-        objects[i] = new_gameobject(ERR, 0, 0, 0, 0);
+        objects[i] = destroy(objects[i]);
       }
 
       for (int j=1; j<=2; j++) {
@@ -268,7 +181,7 @@ void update_physics(WINDOW* game_win, GameObject *objects, int delta, int frame)
         double r = sqrt(fabs(dy)*fabs(dy) + fabs(dx)*fabs(dx));
         if (r < 1) {
           objects[j] = destroy(objects[j]);
-          objects[i] = new_gameobject(ERR, 0, 0, 0, 0);
+          objects[i] = destroy(objects[i]);
           objects[3-j].score += 200;
         }
       }
@@ -284,19 +197,25 @@ void update_physics(WINDOW* game_win, GameObject *objects, int delta, int frame)
   }
 }
 
+
+/* UPDATE SCREEN
+ * Clears game screen and redraws new positions of all game objects
+ * Updates dynamic parts of HUDs, including animations and status indicators
+ */
+
 void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) {
   werase(game);
   box(game, 0, 0);
 
   mvwprintw(game, 0, 4, "┤ SPACEWAR! ├");
   for (int i=0; i < 5; i++) {
+    wcolour(game, 3);
+    mvwprintw(game, ((objects+i)->y3)/2, (objects+i)->x3, "%lc", charoftype((objects+i)->type));
     wcolour(game, 2);
-    mvwprintw(game, ((objects+i)->y3)/2, (objects+i)->x3, "%lc", charof((objects+i)->type));
+    mvwprintw(game, ((objects+i)->y2)/2, (objects+i)->x2, "%lc", charoftype((objects+i)->type));
+    mvwprintw(game, ((objects+i)->y1)/2, (objects+i)->x1, "%lc", charoftype((objects+i)->type));
     wcolour(game, 1);
-    mvwprintw(game, ((objects+i)->y2)/2, (objects+i)->x2, "%lc", charof((objects+i)->type));
-    mvwprintw(game, ((objects+i)->y1)/2, (objects+i)->x1, "%lc", charof((objects+i)->type));
-    wcolour(game, 0);
-    mvwprintw(game, ((objects+i)->y)/2, (objects+i)->x, "%lc", charof((objects+i)->type));
+    mvwprintw(game, ((objects+i)->y)/2, (objects+i)->x, "%lc", charoftype((objects+i)->type));
   }
   wnoutrefresh(game);
 
@@ -424,9 +343,16 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
   doupdate();
 }
 
+
+/* MAIN
+ * Runs initial setup of the windows and object population
+ * Runs game loop
+ */
+
 int main() {
   setup();
 
+  // Create main game windows and UI windows for HUDs in correct place in centre of screen
   int scrh;
   int scrw;
   getmaxyx(stdscr, scrh, scrw);
@@ -437,29 +363,29 @@ int main() {
   WINDOW *game = newwin(gameh, gamew, (scrh-gameh)/2, (scrw-gamew)/2);
   WINDOW *ui1 = newwin(uisize-2, uisize, (scrh-gameh)/2, (scrw-uisize)/2-69);
   WINDOW *ui2 = newwin(uisize-2, uisize, (scrh-gameh)/2, (scrw-uisize)/2+69);
-  wcolour(game, 0);
-  wcolour(ui1, 0);
-  wcolour(ui2, 0);
+  wcolour(game, 1);
+  wcolour(ui1, 1);
+  wcolour(ui2, 1);
 
   create_ui(ui1, 1);
   create_ui(ui2, 2);
 
-  // Initiate array of all game objects (the black hole, the players, and empty spots for bullets to spawn);
+  // Initiate array of all game objects (the black hole, the players, and empty spots for torpedoes to spawn);
   GameObject game_objects[5];
   game_objects[0] = new_gameobject(BLACKHOLE, (double)gameh+0.5, (double)gamew/2, N, 0);
-  game_objects[1] = new_gameobject(PLAYER1, 76.5, 25.5, N, 0);
-  game_objects[2] = new_gameobject(PLAYER2, 26.5, 75.5, S, 0);
-  game_objects[3] = new_gameobject(ERR, 0, 0, 0, 0);
-  game_objects[4] = new_gameobject(ERR, 0, 0, 0, 0);
+  game_objects[1] = new_gameobject(PLAYER1, P1_Y, P1_X, N, 0);
+  game_objects[2] = new_gameobject(PLAYER2, P2_Y, P2_X, S, 0);
+  game_objects[3] = err_gameobject();
+  game_objects[4] = err_gameobject();
 
-  // Start timing to ensure consitent frame rate
+  // Start timing to calculate frametimes
   int frame = 0;
   int delta = 0;
   struct timespec start;
   clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
   while (true) {    
-    if (delta >= 1000000000/FRAMERATE) { // Frametime set to 20 million nanoseconds (50 FPS)
+    if (delta >= 1000000000/FRAMERATE) {
       clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
       int keys_pressed[8] = {-1,-1,-1,-1,-1,-1,-1,-1};

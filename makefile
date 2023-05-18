@@ -1,4 +1,4 @@
-SRC = src/main.c
+SRC = src/main.c src/utils.c
 LNK = -lm -lncursesw
 
 cr: $(SRC)
