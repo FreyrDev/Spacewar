@@ -35,6 +35,24 @@ void setup() {
 }
 
 
+void draw_ship(WINDOW *win, int y, int x, int player) {
+  if (player == 1) {
+    mvwprintw(win, y+0, x, "  /!\\  ");
+    mvwprintw(win, y+1, x, " (   ) ");
+    mvwprintw(win, y+2, x, " / θ \\");
+    mvwprintw(win, y+3, x, "( ___ )");
+    mvwprintw(win, y+4, x, "/_\\ /_\\");
+  }
+  else {
+    mvwprintw(win, y+0, x, " __!__ ");
+    mvwprintw(win, y+1, x, "(_   _)");
+    mvwprintw(win, y+2, x, "  |θ|  ");
+    mvwprintw(win, y+3, x, "  ( )  ");
+    mvwprintw(win, y+4, x, "  /_\\ ");
+  }
+}
+
+
 /* CREATE UI
  * Prints the static parts of the players' HUDs, so they don't have to be reprinted every frame
  * Also includes the player specific spaceship for the visuals section
@@ -71,21 +89,8 @@ void create_ui(WINDOW *ui, int player) {
     "└────────────────────────────┘"
     , player);
 
-
-  if (player == 1) {
-    mvwprintw(ui,  7, 3, "  /!\\  ");
-    mvwprintw(ui,  8, 3, " (   ) ");
-    mvwprintw(ui,  9, 3, " / θ \\");
-    mvwprintw(ui, 10, 3, "( ___ )");
-    mvwprintw(ui, 11, 3, "/_\\ /_\\");
-  }
-  else {
-    mvwprintw(ui,  7, 3, " __!__ ");
-    mvwprintw(ui,  8, 3, "(_   _)");
-    mvwprintw(ui,  9, 3, "  |θ|  ");
-    mvwprintw(ui, 10, 3, "  ( )  ");
-    mvwprintw(ui, 11, 3, "  /_\\ ");
-  }
+  draw_ship(ui, 7, 3, player);
+  
   wrefresh(ui);
 }
 
@@ -299,10 +304,58 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
 }
 
 
-// Handles the key presses for while the game is running 
-void handle_game_inputs(GameObject *objects, int keys[]) {
+// Draws the title screen/pause menu
+void update_menu_screen(WINDOW *win, int winw, int selected) {
+  werase(win);
+
+  mvwprintw(win, 10, (winw-49)/2, " _____                                         _ ");
+  mvwprintw(win, 11, (winw-49)/2, "/  ___|                                       | |");
+  mvwprintw(win, 12, (winw-49)/2, "\\ `--. _ __   __ _  ___ _____      ____ _ _ __| |");
+  mvwprintw(win, 13, (winw-49)/2, " `--. \\ '_ \\ / _` |/ __/ _ \\ \\ /\\ / / _` | '__| |");
+  mvwprintw(win, 14, (winw-49)/2, "/\\__/ / |_) | (_| | (_|  __/\\ V  V / (_| | |  |_|");
+  mvwprintw(win, 15, (winw-49)/2, "\\____/| .__/ \\__,_|\\___\\___| \\_/\\_/ \\__,_|_|  (_)");
+  mvwprintw(win, 16, (winw-49)/2, "      | |                                        ");
+  mvwprintw(win, 17, (winw-49)/2, "      |_|                                        ");
+
+  if (selected == 0) {
+    mvwprintw(win, 22, (winw-11)/2, "─┤ PLAY! ├─");
+    mvwprintw(win, 25, (winw-11)/2, "─╴ QUIT? ╶─");
+  }
+  else {
+    mvwprintw(win, 22, (winw-11)/2, "─╴ PLAY? ╶─");
+    mvwprintw(win, 25, (winw-11)/2, "─┤ QUIT! ├─");
+  }
+
+  draw_ship(win, 21, (winw-7)/2-15, 1);
+  draw_ship(win, 21, (winw-7)/2+15, 2);
+  mvwaddch(win, 26, (winw-7)/2-10, "^\"*8°"[rand() % 5]);
+  mvwaddch(win, 26, (winw-7)/2-14, "^\"*8°"[rand() % 5]);
+  mvwaddch(win, 26, (winw-7)/2+18, "^\"*8°"[rand() % 5]);
+
+  wrefresh(win);
+}
+
+// Handles the key presses for while the menu is open
+void handle_menu_inputs(int keys[], int *pause_toggle, int *selected, int *quit) {
   for (int i = 0; i < 8 && keys[i] != ERR; i++) {
-    if (keys[i] == 'w') {
+    if (keys[i] == 'w' || keys[i] == KEY_UP || keys[i] == 's' || keys[i] == KEY_DOWN) {
+      *selected = !(*selected);
+    }
+    else if (keys[i] == '\n') {
+      if (*selected == 1) { *quit = true; }
+      else { *pause_toggle = true; }
+    }
+  }
+}
+
+
+// Handles the key presses for while the game is running 
+void handle_game_inputs(GameObject *objects, int keys[], int *pause_toggle) {
+  for (int i = 0; i < 8 && keys[i] != ERR; i++) {
+    if (keys[i] == '\n') {
+      *pause_toggle = true;
+    }
+    else if (keys[i] == 'w') {
       objects[1].acc = !objects[1].acc;
     }
     else if (keys[i] == 'a') {
@@ -361,9 +414,6 @@ int main() {
   wcolour(ui1, 1);
   wcolour(ui2, 1);
 
-  create_ui(ui1, 1);
-  create_ui(ui2, 2);
-
   // Initiate array of all game objects (the black hole, the players, and empty spots for torpedoes to spawn);
   GameObject game_objects[5];
   game_objects[0] = new_gameobject(BLACKHOLE, (double)gameh+0.5, (double)gamew/2, N, 0);
@@ -379,6 +429,10 @@ int main() {
   clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
   int quit = false;
+  int paused = true;
+  int pause_toggle = false;
+  int selected = 0;
+
   while (!quit) { 
     if (delta >= 1000000000/FRAMERATE) {
       clock_gettime(CLOCK_MONOTONIC_RAW, &start);
@@ -392,10 +446,31 @@ int main() {
       }
       keys_pressed[ch_num] = ERR;
 
-      handle_game_inputs(game_objects, keys_pressed);
+      if (pause_toggle && paused) {
+        create_ui(ui1, 1);
+        create_ui(ui2, 2);
+        paused = false;
+        pause_toggle = false;
+      }
+      else if (pause_toggle && !paused) {
+        werase(ui1);
+        werase(ui2);
+        wnoutrefresh(ui1);
+        wnoutrefresh(ui2);
+        doupdate();
+        paused = true;
+        pause_toggle = false;
+      }
 
-      update_physics(game, game_objects, delta, frame);
-      update_screen(game, ui1, ui2, game_objects);
+      if (paused) {
+        handle_menu_inputs(keys_pressed, &pause_toggle, &selected, &quit);
+        update_menu_screen(game, gamew, selected);
+      }
+      else {
+        handle_game_inputs(game_objects, keys_pressed, &pause_toggle);
+        update_physics(game, game_objects, delta, frame);
+        update_screen(game, ui1, ui2, game_objects);
+      }
 
       delta = 0;
       frame++;
