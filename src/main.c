@@ -304,12 +304,6 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
 }
 
 
-void game_over(WINDOW *win, GameObject *objects, int winner) {
-  mvwprintw(win, 30, 44, "PLAYER %d WINS", winner);
-  mvwprintw(win, 32, 32, "P1 SCORE  %05d       PLAYER2 SCORE  %05d", objects[1].score, objects[2].score);
-}
-
-
 // Draws the title screen/pause menu
 void update_menu_screen(WINDOW *win, GameObject *objects, int winw, int selected, int winner) {
   werase(win);
@@ -324,22 +318,30 @@ void update_menu_screen(WINDOW *win, GameObject *objects, int winw, int selected
   mvwprintw(win, 17, (winw-49)/2, "      |_|                                        ");
 
   if (selected == 0) {
-    mvwprintw(win, 22, (winw-13)/2, " ─┤ PLAY! ├─ ");
-    mvwprintw(win, 25, (winw-13)/2, "─╴  QUIT?  ╶─");
+    mvwprintw(win, 23, (winw-13)/2, " ─┤ PLAY! ├─ ");
+    mvwprintw(win, 26, (winw-13)/2, "─╴  QUIT?  ╶─");
   }
   else {
-    mvwprintw(win, 22, (winw-13)/2, "─╴  PLAY?  ╶─");
-    mvwprintw(win, 25, (winw-13)/2, " ─┤ QUIT! ├─ ");
+    mvwprintw(win, 23, (winw-13)/2, "─╴  PLAY?  ╶─");
+    mvwprintw(win, 26, (winw-13)/2, " ─┤ QUIT! ├─ ");
   }
 
-  draw_ship(win, 21, (winw-7)/2-15, 1);
-  draw_ship(win, 21, (winw-7)/2+15, 2);
-  mvwaddch(win, 26, (winw-7)/2-10, "^\"*8°"[rand() % 5]);
-  mvwaddch(win, 26, (winw-7)/2-14, "^\"*8°"[rand() % 5]);
-  mvwaddch(win, 26, (winw-7)/2+18, "^\"*8°"[rand() % 5]);
+  mvwprintw(win, 20, (winw-3)/2-15, "P 1");
+  mvwprintw(win, 20, (winw-3)/2+15, "P 2");
+
+  draw_ship(win, 22, (winw-7)/2-15, 1);
+  draw_ship(win, 22, (winw-7)/2+15, 2);
+
+  mvwprintw(win, 29, (winw-7)/2-15, "W A S D");
+  mvwprintw(win, 29, (winw-7)/2+15, "↑ ← ↓ →");
 
   if (winner) {
-    game_over(win, objects, winner);
+    mvwprintw(win, 32, 44, "PLAYER %d WINS", winner);
+    mvwprintw(win, 34, 32, "P1 SCORE  %05d       P2 SCORE  %05d", objects[1].score, objects[2].score);
+
+    mvwaddch(win, 27, (winw-7)/2-10, "^\"*8°"[rand() % 5]);
+    mvwaddch(win, 27, (winw-7)/2-14, "^\"*8°"[rand() % 5]);
+    mvwaddch(win, 27, (winw-7)/2+18, "^\"*8°"[rand() % 5]);
   }
 
   wrefresh(win);
@@ -358,7 +360,6 @@ void handle_menu_inputs(int keys[], int *pause_toggle, int *selected, int *quit)
     }
   }
 }
-
 
 // Handles the key presses for while the game is running 
 void handle_game_inputs(GameObject *objects, int keys[], int *pause_toggle) {
