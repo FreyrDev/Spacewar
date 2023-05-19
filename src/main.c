@@ -299,6 +299,45 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
 }
 
 
+// Handles the key presses for while the game is running 
+void handle_game_inputs(GameObject *objects, int keys[]) {
+  for (int i = 0; i < 8 && keys[i] != ERR; i++) {
+    if (keys[i] == 'w') {
+      objects[1].acc = !objects[1].acc;
+    }
+    else if (keys[i] == 'a') {
+      objects[1].dir -= 1;
+      if(objects[1].dir < 0) { objects[1].dir += 8;}
+    }
+    else if (keys[i] == 'd') {
+      objects[1].dir += 1;
+      objects[1].dir %= 8;
+    }
+    else if (keys[i] == 's' && objects[3].type == ERR) {
+      objects[3] = new_gameobject(BULLET, objects[1].y+2*thrust_vector(objects[1].dir, 'y'), objects[1].x+2*thrust_vector(objects[1].dir, 'x'), N, INT_MAX);
+      objects[3].vely = objects[1].vely + 0.5*thrust_vector(objects[1].dir, 'y');
+      objects[3].velx = objects[1].velx + 0.5*thrust_vector(objects[1].dir, 'x');
+    }
+    else if (keys[i] == KEY_UP) {
+      objects[2].acc = !objects[2].acc;
+    }
+    else if (keys[i] == KEY_LEFT) {
+      objects[2].dir -= 1;
+      if(objects[2].dir < 0) { objects[2].dir += 8;}
+    }
+    else if (keys[i] == KEY_RIGHT) {
+      objects[2].dir += 1;
+      objects[2].dir %= 8;
+    }
+    else if (keys[i] == KEY_DOWN && objects[4].type == ERR) {
+      objects[4] = new_gameobject(BULLET, objects[2].y+2*thrust_vector(objects[2].dir, 'y'), objects[2].x+2*thrust_vector(objects[2].dir, 'x'), N, INT_MAX);
+      objects[4].vely = objects[2].vely + 0.5*thrust_vector(objects[2].dir, 'y');
+      objects[4].velx = objects[2].velx + 0.5*thrust_vector(objects[2].dir, 'x');
+    }
+  }
+}
+
+
 /* MAIN
  * Runs initial setup of the windows and object population
  * Runs game loop
@@ -339,7 +378,8 @@ int main() {
   struct timespec start;
   clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
-  while (true) {    
+  int quit = false;
+  while (!quit) { 
     if (delta >= 1000000000/FRAMERATE) {
       clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
@@ -352,44 +392,7 @@ int main() {
       }
       keys_pressed[ch_num] = ERR;
 
-      for (int i = 0; i < 8 && keys_pressed[i] != ERR; i++) {
-        if (keys_pressed[i] == 'w') {
-          game_objects[1].acc = !game_objects[1].acc;
-        }
-        else if (keys_pressed[i] == 'a') {
-          game_objects[1].dir -= 1;
-          if(game_objects[1].dir < 0) { game_objects[1].dir += 8;}
-        }
-        else if (keys_pressed[i] == 'd') {
-          game_objects[1].dir += 1;
-          game_objects[1].dir %= 8;
-        }
-        else if (keys_pressed[i] == 's') {
-          if (game_objects[3].type == ERR) {
-            game_objects[3] = new_gameobject(BULLET, game_objects[1].y+2*thrust_vector(game_objects[1].dir, 'y'), game_objects[1].x+2*thrust_vector(game_objects[1].dir, 'x'), N, INT_MAX);
-            game_objects[3].vely = game_objects[1].vely + 0.5*thrust_vector(game_objects[1].dir, 'y');
-            game_objects[3].velx = game_objects[1].velx + 0.5*thrust_vector(game_objects[1].dir, 'x');
-          }
-        }
-        else if (keys_pressed[i] == KEY_UP) {
-          game_objects[2].acc = !game_objects[2].acc;
-        }
-        else if (keys_pressed[i] == KEY_LEFT) {
-          game_objects[2].dir -= 1;
-          if(game_objects[2].dir < 0) { game_objects[2].dir += 8;}
-        }
-        if (keys_pressed[i] == KEY_RIGHT) {
-          game_objects[2].dir += 1;
-          game_objects[2].dir %= 8;
-        }
-        else if (keys_pressed[i] == KEY_DOWN) {
-          if (game_objects[4].type == ERR) {
-            game_objects[4] = new_gameobject(BULLET, game_objects[2].y+2*thrust_vector(game_objects[2].dir, 'y'), game_objects[2].x+2*thrust_vector(game_objects[2].dir, 'x'), N, INT_MAX);
-            game_objects[4].vely = game_objects[2].vely + 0.5*thrust_vector(game_objects[2].dir, 'y');
-            game_objects[4].velx = game_objects[2].velx + 0.5*thrust_vector(game_objects[2].dir, 'x');
-          }
-        }
-      }
+      handle_game_inputs(game_objects, keys_pressed);
 
       update_physics(game, game_objects, delta, frame);
       update_screen(game, ui1, ui2, game_objects);
