@@ -96,15 +96,15 @@ void create_ui(WINDOW *ui, int player) {
 
 
 // Automates resetting the players position when they are destroyed
-GameObject destroy(GameObject player) {
-  if (player.type == PLAYER1) {
-    return new_gameobject(PLAYER1, P1_Y, P1_X, NW, player.score-50);
+void destroy(GameObject *player) {
+  if (player->type == PLAYER1) {
+    *player = new_gameobject(PLAYER1, P1_Y, P1_X, NW, player->score-50);
   }
-  else if (player.type == PLAYER2) {
-    return new_gameobject(PLAYER2, P2_Y, P2_X, SE, player.score-50);
+  else if (player->type == PLAYER2) {
+    *player = new_gameobject(PLAYER2, P2_Y, P2_X, SE, player->score-50);
   }
   else {
-    return err_gameobject();
+    *player = err_gameobject();
   }
 }
 
@@ -153,7 +153,7 @@ void update_physics(WINDOW* game_win, GameObject *objects, int delta, int frame)
       objects[i].velx += g * unitx * d;
 
       if (r < 0.5) {
-        objects[i] = destroy(objects[i]);
+        destroy(&objects[i]);
       }
 
       dy = objects[i].y - objects[3-i].y;
@@ -162,8 +162,8 @@ void update_physics(WINDOW* game_win, GameObject *objects, int delta, int frame)
       r = sqrt(r2);
 
       if (r < 1) {
-        objects[i] = destroy(objects[i]);
-        objects[3-i] = destroy(objects[3-i]);
+        destroy(&objects[i]);
+        destroy(&objects[3-i]);
       }
 
       double velxy = total_vel(objects[i]);
@@ -176,7 +176,7 @@ void update_physics(WINDOW* game_win, GameObject *objects, int delta, int frame)
     if (objects[i].type == BULLET) {
       objects[i].score -= delta;
       if (objects[i].score < 0) {
-        objects[i] = destroy(objects[i]);
+        destroy(&objects[i]);
       }
 
       for (int j=1; j<=2; j++) {
@@ -184,9 +184,9 @@ void update_physics(WINDOW* game_win, GameObject *objects, int delta, int frame)
         double dx = objects[i].x - objects[j].x;
         double r = sqrt(fabs(dy)*fabs(dy) + fabs(dx)*fabs(dx));
         if (r < 1) {
-          objects[j] = destroy(objects[j]);
-          objects[i] = destroy(objects[i]);
-          objects[3-j].score += 200;
+          destroy(&objects[j]);
+          destroy(&objects[i]);
+          objects[3-j].score += 250;
         }
       }
     }
@@ -304,8 +304,14 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
 }
 
 
+void game_over(WINDOW *win, GameObject *objects, int winner) {
+  mvwprintw(win, 30, 44, "PLAYER %d WINS", winner);
+  mvwprintw(win, 32, 32, "P1 SCORE  %05d       PLAYER2 SCORE  %05d", objects[1].score, objects[2].score);
+}
+
+
 // Draws the title screen/pause menu
-void update_menu_screen(WINDOW *win, int winw, int selected) {
+void update_menu_screen(WINDOW *win, GameObject *objects, int winw, int selected, int winner) {
   werase(win);
 
   mvwprintw(win, 10, (winw-49)/2, " _____                                         _ ");
@@ -332,8 +338,13 @@ void update_menu_screen(WINDOW *win, int winw, int selected) {
   mvwaddch(win, 26, (winw-7)/2-14, "^\"*8°"[rand() % 5]);
   mvwaddch(win, 26, (winw-7)/2+18, "^\"*8°"[rand() % 5]);
 
+  if (winner) {
+    game_over(win, objects, winner);
+  }
+
   wrefresh(win);
 }
+
 
 // Handles the key presses for while the menu is open
 void handle_menu_inputs(int keys[], int *pause_toggle, int *selected, int *quit) {
@@ -432,6 +443,7 @@ int main() {
   int paused = true;
   int pause_toggle = false;
   int selected = 0;
+  int winner = 0;
 
   while (!quit) { 
     if (delta >= 1000000000/FRAMERATE) {
@@ -449,6 +461,16 @@ int main() {
       if (pause_toggle && paused) {
         create_ui(ui1, 1);
         create_ui(ui2, 2);
+
+        if (winner) {
+          destroy(&game_objects[1]);
+          destroy(&game_objects[2]);
+          destroy(&game_objects[3]);
+          destroy(&game_objects[4]);
+          game_objects[1].score = 0;
+          game_objects[2].score = 0;
+        }
+
         paused = false;
         pause_toggle = false;
       }
@@ -464,12 +486,21 @@ int main() {
 
       if (paused) {
         handle_menu_inputs(keys_pressed, &pause_toggle, &selected, &quit);
-        update_menu_screen(game, gamew, selected);
+        update_menu_screen(game, game_objects, gamew, selected, winner);
       }
       else {
         handle_game_inputs(game_objects, keys_pressed, &pause_toggle);
         update_physics(game, game_objects, delta, frame);
         update_screen(game, ui1, ui2, game_objects);
+
+        if (game_objects[1].score >= 1000 || game_objects[2].score <= -1000) {
+          pause_toggle = true;
+          winner = 1;
+        }
+        else if (game_objects[2].score >= 1000 || game_objects[1].score <= -1000) {
+          pause_toggle = true;
+          winner = 2;
+        }
       }
 
       delta = 0;
