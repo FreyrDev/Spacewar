@@ -318,12 +318,12 @@ void update_menu_screen(WINDOW *win, int winw, int selected) {
   mvwprintw(win, 17, (winw-49)/2, "      |_|                                        ");
 
   if (selected == 0) {
-    mvwprintw(win, 22, (winw-11)/2, "─┤ PLAY! ├─");
-    mvwprintw(win, 25, (winw-11)/2, "─╴ QUIT? ╶─");
+    mvwprintw(win, 22, (winw-13)/2, " ─┤ PLAY! ├─ ");
+    mvwprintw(win, 25, (winw-13)/2, "─╴  QUIT?  ╶─");
   }
   else {
-    mvwprintw(win, 22, (winw-11)/2, "─╴ PLAY? ╶─");
-    mvwprintw(win, 25, (winw-11)/2, "─┤ QUIT! ├─");
+    mvwprintw(win, 22, (winw-13)/2, "─╴  PLAY?  ╶─");
+    mvwprintw(win, 25, (winw-13)/2, " ─┤ QUIT! ├─ ");
   }
 
   draw_ship(win, 21, (winw-7)/2-15, 1);
