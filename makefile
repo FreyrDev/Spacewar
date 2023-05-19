@@ -1,11 +1,12 @@
 SRC = src/main.c src/utils.c
 LNK = -lm -lncursesw
+OUT = spacewar
 
 cr: $(SRC)
-	gcc -o out/spacewar $(SRC) $(LNK) && ./out/spacewar
+	gcc -o $(OUT) $(SRC) $(LNK) && ./$(OUT)
 
 c: $(SRC)
-	gcc -o out/spacewar $(SRC) $(LNK)
+	gcc -o $(OUT) $(SRC) $(LNK)
 
 r:
-	./out/spacewar
+	./$(OUT)
