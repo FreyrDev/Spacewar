@@ -8,6 +8,7 @@
 
 ## Controls
  Due to limitations of ncurses, the controls are tap or toggle based rather than hold down. Engines are toggle on/off, while turning requires taps.
+ Pause/unpause as well as selecting the menu option are performed using the <kbd>Enter</kbd> key.
  
  | Action | Player 1 | Player 2 |
  |:------:|:--------:|:--------:|
