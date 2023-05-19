@@ -8,6 +8,9 @@
 #define P2_Y 26.5
 #define P2_X 75.5
 
+#define WIN_H 51
+#define WIN_W 101
+#define UI_SIZE 30
 
 /* SETUP
  * Calls all required functions for ncurses setup so the screen displays correctly
@@ -305,43 +308,43 @@ void update_screen(WINDOW *game, WINDOW *ui1, WINDOW *ui2, GameObject *objects) 
 
 
 // Draws the title screen/pause menu
-void update_menu_screen(WINDOW *win, GameObject *objects, int winw, int selected, int winner) {
+void update_menu_screen(WINDOW *win, GameObject *objects, int selected, int winner) {
   werase(win);
 
-  mvwprintw(win, 10, (winw-49)/2, " _____                                         _ ");
-  mvwprintw(win, 11, (winw-49)/2, "/  ___|                                       | |");
-  mvwprintw(win, 12, (winw-49)/2, "\\ `--. _ __   __ _  ___ _____      ____ _ _ __| |");
-  mvwprintw(win, 13, (winw-49)/2, " `--. \\ '_ \\ / _` |/ __/ _ \\ \\ /\\ / / _` | '__| |");
-  mvwprintw(win, 14, (winw-49)/2, "/\\__/ / |_) | (_| | (_|  __/\\ V  V / (_| | |  |_|");
-  mvwprintw(win, 15, (winw-49)/2, "\\____/| .__/ \\__,_|\\___\\___| \\_/\\_/ \\__,_|_|  (_)");
-  mvwprintw(win, 16, (winw-49)/2, "      | |                                        ");
-  mvwprintw(win, 17, (winw-49)/2, "      |_|                                        ");
+  mvwprintw(win, 10, (WIN_W-49)/2, " _____                                         _ ");
+  mvwprintw(win, 11, (WIN_W-49)/2, "/  ___|                                       | |");
+  mvwprintw(win, 12, (WIN_W-49)/2, "\\ `--. _ __   __ _  ___ _____      ____ _ _ __| |");
+  mvwprintw(win, 13, (WIN_W-49)/2, " `--. \\ '_ \\ / _` |/ __/ _ \\ \\ /\\ / / _` | '__| |");
+  mvwprintw(win, 14, (WIN_W-49)/2, "/\\__/ / |_) | (_| | (_|  __/\\ V  V / (_| | |  |_|");
+  mvwprintw(win, 15, (WIN_W-49)/2, "\\____/| .__/ \\__,_|\\___\\___| \\_/\\_/ \\__,_|_|  (_)");
+  mvwprintw(win, 16, (WIN_W-49)/2, "      | |                                        ");
+  mvwprintw(win, 17, (WIN_W-49)/2, "      |_|                                        ");
 
   if (selected == 0) {
-    mvwprintw(win, 23, (winw-13)/2, " ─┤ PLAY! ├─ ");
-    mvwprintw(win, 26, (winw-13)/2, "─╴  QUIT?  ╶─");
+    mvwprintw(win, 23, (WIN_W-13)/2, " ─┤ PLAY! ├─ ");
+    mvwprintw(win, 26, (WIN_W-13)/2, "─╴  QUIT?  ╶─");
   }
   else {
-    mvwprintw(win, 23, (winw-13)/2, "─╴  PLAY?  ╶─");
-    mvwprintw(win, 26, (winw-13)/2, " ─┤ QUIT! ├─ ");
+    mvwprintw(win, 23, (WIN_W-13)/2, "─╴  PLAY?  ╶─");
+    mvwprintw(win, 26, (WIN_W-13)/2, " ─┤ QUIT! ├─ ");
   }
 
-  mvwprintw(win, 20, (winw-3)/2-15, "P 1");
-  mvwprintw(win, 20, (winw-3)/2+15, "P 2");
+  mvwprintw(win, 20, (WIN_W-3)/2-15, "P 1");
+  mvwprintw(win, 20, (WIN_W-3)/2+15, "P 2");
 
-  draw_ship(win, 22, (winw-7)/2-15, 1);
-  draw_ship(win, 22, (winw-7)/2+15, 2);
+  draw_ship(win, 22, (WIN_W-7)/2-15, 1);
+  draw_ship(win, 22, (WIN_W-7)/2+15, 2);
 
-  mvwprintw(win, 29, (winw-7)/2-15, "W A S D");
-  mvwprintw(win, 29, (winw-7)/2+15, "↑ ← ↓ →");
+  mvwprintw(win, 29, (WIN_W-7)/2-15, "W A S D");
+  mvwprintw(win, 29, (WIN_W-7)/2+15, "↑ ← ↓ →");
 
   if (winner) {
-    mvwprintw(win, 32, 44, "PLAYER %d WINS", winner);
-    mvwprintw(win, 34, 32, "P1 SCORE  %05d       P2 SCORE  %05d", objects[1].score, objects[2].score);
+    mvwprintw(win, 32, (WIN_W-13)/2, "PLAYER %d WINS", winner);
+    mvwprintw(win, 34, (WIN_W-37)/2, "P1 SCORE  %05d       P2 SCORE  %05d", objects[1].score, objects[2].score);
 
-    mvwaddch(win, 27, (winw-7)/2-10, "^\"*8°"[rand() % 5]);
-    mvwaddch(win, 27, (winw-7)/2-14, "^\"*8°"[rand() % 5]);
-    mvwaddch(win, 27, (winw-7)/2+18, "^\"*8°"[rand() % 5]);
+    mvwaddch(win, 27, (WIN_W-7)/2-10, "^\"*8°"[rand() % 5]);
+    mvwaddch(win, 27, (WIN_W-7)/2-14, "^\"*8°"[rand() % 5]);
+    mvwaddch(win, 27, (WIN_W-7)/2+18, "^\"*8°"[rand() % 5]);
   }
 
   wrefresh(win);
@@ -416,19 +419,16 @@ int main() {
   int scrw;
   getmaxyx(stdscr, scrh, scrw);
 
-  int gameh = 51;
-  int gamew = 101;
-  int uisize = 30;
-  WINDOW *game = newwin(gameh, gamew, (scrh-gameh)/2, (scrw-gamew)/2);
-  WINDOW *ui1 = newwin(uisize-2, uisize, (scrh-gameh)/2, (scrw-uisize)/2-69);
-  WINDOW *ui2 = newwin(uisize-2, uisize, (scrh-gameh)/2, (scrw-uisize)/2+69);
+  WINDOW *game = newwin(WIN_H, WIN_W, (scrh-WIN_H)/2, (scrw-WIN_W)/2);
+  WINDOW *ui1 = newwin(UI_SIZE-2, UI_SIZE, (scrh-WIN_H)/2, (scrw-UI_SIZE)/2-69);
+  WINDOW *ui2 = newwin(UI_SIZE-2, UI_SIZE, (scrh-WIN_H)/2, (scrw-UI_SIZE)/2+69);
   wcolour(game, 1);
   wcolour(ui1, 1);
   wcolour(ui2, 1);
 
   // Initiate array of all game objects (the black hole, the players, and empty spots for torpedoes to spawn);
   GameObject game_objects[5];
-  game_objects[0] = new_gameobject(BLACKHOLE, (double)gameh+0.5, (double)gamew/2, N, 0);
+  game_objects[0] = new_gameobject(BLACKHOLE, (double)WIN_H+0.5, (double)WIN_W/2, N, 0);
   game_objects[1] = new_gameobject(PLAYER1, P1_Y, P1_X, NW, 0);
   game_objects[2] = new_gameobject(PLAYER2, P2_Y, P2_X, SE, 0);
   game_objects[3] = err_gameobject();
@@ -487,7 +487,7 @@ int main() {
 
       if (paused) {
         handle_menu_inputs(keys_pressed, &pause_toggle, &selected, &quit);
-        update_menu_screen(game, game_objects, gamew, selected, winner);
+        update_menu_screen(game, game_objects, selected, winner);
       }
       else {
         handle_game_inputs(game_objects, keys_pressed, &pause_toggle);
