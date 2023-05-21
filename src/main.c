@@ -111,13 +111,6 @@ void destroy(Player *player) {
 
 /* UPDATE PHYSICS
  * Steps all physics on each frame, with delta since last frame to correct for frametime differences
- * Includes:
- * - Calculating trail positions
- * - Applying engine acceleration
- * - Applying gravity to player spaceships
- * - Capping player speed
- * - Calculating collisions for players and bullets
- * - Moving players to opposite edge of window if bounds exceeded
  */
 
 void update_physics(WINDOW* game_win, GameState *game, int delta, int frame) {
@@ -127,22 +120,14 @@ void update_physics(WINDOW* game_win, GameState *game, int delta, int frame) {
   getmaxyx(game_win, winh, winw);
 
   for (int i=0; i < 2; i++) {
-    if (frame%4 == 0) {
-      game->players[i].data.y3 = game->players[i].data.y2;
-      game->players[i].data.x3 = game->players[i].data.x2;
-      game->players[i].data.y2 = game->players[i].data.y1;
-      game->players[i].data.x2 = game->players[i].data.x1;
-      game->players[i].data.y1 = game->players[i].data.y;
-      game->players[i].data.x1 = game->players[i].data.x;
 
-      game->bullets[i].data.y3 = game->bullets[i].data.y2;
-      game->bullets[i].data.x3 = game->bullets[i].data.x2;
-      game->bullets[i].data.y2 = game->bullets[i].data.y1;
-      game->bullets[i].data.x2 = game->bullets[i].data.x1;
-      game->bullets[i].data.y1 = game->bullets[i].data.y;
-      game->bullets[i].data.x1 = game->bullets[i].data.x;
+    // Calculate the new positions of the colour trails
+    if (frame%4 == 0) {
+      shift_trails(&game->players[i].data);
+      shift_trails(&game->bullets[i].data);
     }
 
+    // Check for overheating and calculate temperature & engine acceleration
     if (game->players[i].temp > 100) {
       game->players[i].acc = false;
       game->players[i].temp = -100;
@@ -155,14 +140,14 @@ void update_physics(WINDOW* game_win, GameState *game, int delta, int frame) {
       if (game->players[i].temp < 0) { game->players[i].temp = 0; }
     }
     else {
-      game->players[i].data.vely += 0.005 * thrust_vector(game->players[i].dir, 'y') * d;
-      game->players[i].data.velx += 0.005 * thrust_vector(game->players[i].dir, 'x') * d;
-      game->players[i].temp += d;
+      game->players[i].data.vely += 0.005 * thrust_vector(game->players[i].dir, Y) * d;
+      game->players[i].data.velx += 0.005 * thrust_vector(game->players[i].dir, X) * d;
+      game->players[i].temp += d/2;
     }
 
     double dy = game->players[i].data.y - game->bh.y;
     double dx = game->players[i].data.x - game->bh.x;
-    double r2 = fabs(dy)*fabs(dy) + fabs(dx)*fabs(dx);
+    double r2 = total_dist_squared(dy, dx);
     double r = sqrt(r2);
     double g = -2 / r2;
     double unity = dy / r;
@@ -176,7 +161,7 @@ void update_physics(WINDOW* game_win, GameState *game, int delta, int frame) {
 
     dy = game->players[i].data.y - game->players[1-i].data.y;
     dx = game->players[i].data.x - game->players[1-i].data.x;
-    r2 = fabs(dy)*fabs(dy) + fabs(dx)*fabs(dx);
+    r2 = total_dist_squared(dy, dx);
     r = sqrt(r2);
 
     if (r < 1) {
@@ -315,7 +300,7 @@ void update_screen(WINDOW *win, WINDOW *ui1, WINDOW *ui2, GameState game) {
     mvwprintw(ui[i], 17, 2, "· • ·");
     mvwprintw(ui[i], 18, 2, "· · ·");
 
-    mvwprintw(ui[i], 17+round(thrust_vector(game.players[i].dir, 'y')), 4+2*round(thrust_vector(game.players[i].dir, 'x')), "%lc", charofdir(game.players[i].dir));
+    mvwprintw(ui[i], 17+round(thrust_vector(game.players[i].dir, Y)), 4+2*round(thrust_vector(game.players[i].dir, X)), "%lc", charofdir(game.players[i].dir));
 
     mvwprintw(ui[i], 17, 9, "%03d°", game.players[i].dir * 45);
 
@@ -423,10 +408,10 @@ void handle_game_inputs(GameState *game, int keys[], int *pause_toggle) {
       game->bullets[0].data.vely = game->players[0].data.vely + 0.5*thrust_vector(game->players[0].dir, 'y');
       game->bullets[0].data.velx = game->players[0].data.velx + 0.5*thrust_vector(game->players[0].dir, 'x');
     }
-    else if (keys[i] == KEY_UP) {
+    else if (keys[i] == KEY_UP  && game->players[1].temp >= 0) {
       game->players[1].acc = !game->players[1].acc;
     }
-    else if (keys[i] == KEY_LEFT && game->players[1].temp >= 0) {
+    else if (keys[i] == KEY_LEFT) {
       game->players[1].dir -= 1;
       if(game->players[1].dir < 0) { game->players[1].dir += 8;}
     }

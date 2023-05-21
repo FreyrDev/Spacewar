@@ -41,14 +41,28 @@ Bullet err_bullet() {
   return (Bullet){ERR, new_objectdata(0, 0), 0};
 }
 
+double total_dist_squared(double dy, double dx) {
+  return dy*dy + dx*dx;
+}
+
 // Calculates the total velocity from the component parts
 double total_vel(ObjectData object) {
   return sqrt(object.vely*object.vely + object.velx*object.velx);
 }
 
+// Shifts the extra coordinates used for the colour trails
+void shift_trails(ObjectData *data) {
+  data->y3 = data->y2;
+  data->x3 = data->x2;
+  data->y2 = data->y1;
+  data->x2 = data->x1;
+  data->y1 = data->y;
+  data->x1 = data->x;
+}
+
 // Calculates the strength/direction of thrust along a given axis based on a facing direction
 // Used for the ship engine acceletation and torpedoes' initial thrust
-double thrust_vector(int object_dir, char axis) {
+double thrust_vector(int object_dir, enum Axis axis) {
   double magnitude;
   double direction;
 
@@ -57,7 +71,7 @@ double thrust_vector(int object_dir, char axis) {
     case 1: magnitude = 1/sqrt(2); break;
   }
   
-  if (axis == 'x') {
+  if (axis == X) {
     object_dir += 2;
     object_dir %= 8;
   }

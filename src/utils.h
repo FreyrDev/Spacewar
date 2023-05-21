@@ -19,6 +19,7 @@
 
 enum Type { BLACKHOLE, PLAYER1, PLAYER2, BULLET };
 enum Dir  { N, NE, E, SE, S, SW, W, NW };
+enum Axis { Y, X };
 
 typedef struct ObjectData {
   double y, x;
@@ -58,8 +59,10 @@ ObjectData new_objectdata(double y, double x);
 Player new_player(enum Type type, double y, double x, int dir, int score);
 Bullet new_bullet(double y, double x);
 Bullet err_bullet();
+double total_dist_squared(double dy, double dx);
 double total_vel(ObjectData object);
-double thrust_vector(int object_dir, char axis);
+void shift_trails(ObjectData *data);
+double thrust_vector(int object_dir, enum Axis axis);
 wchar_t charoftype(enum Type type);
 wchar_t charofdir(enum Dir dir);
 
