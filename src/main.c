@@ -142,6 +142,7 @@ void update_physics(GameState *game, int delta, int frame) {
       game->players[i].temp += d/2;
     }
 
+    // Gravity calculations for the black hole
     double dy = game->players[i].data.y - game->bh.y;
     double dx = game->players[i].data.x - game->bh.x;
     double r2 = total_dist_squared(dy, dx);
@@ -156,55 +157,69 @@ void update_physics(GameState *game, int delta, int frame) {
       destroy(&game->players[i]);
     }
 
+    // Destroy players ships if they've crashed into each other
     dy = game->players[i].data.y - game->players[1-i].data.y;
     dx = game->players[i].data.x - game->players[1-i].data.x;
-    r2 = total_dist_squared(dy, dx);
-    r = sqrt(r2);
-
+    r = sqrt(total_dist_squared(dy, dx));
     if (r < 1) {
       destroy(&game->players[i]);
       destroy(&game->players[1-i]);
     }
 
+    // Cap players velocity at 1
     double velxy = total_vel(game->players[i].data);
     if (velxy > 1) {
       game->players[i].data.vely /= velxy;
       game->players[i].data.velx /= velxy;
     }
 
+    // Update position with new velocity
     game->players[i].data.y += game->players[i].data.vely * d;
     game->players[i].data.x += game->players[i].data.velx * d;
 
+    // Move ship to opposite side of screen if it goes off the edge
     if (game->players[i].data.y >= 2*WIN_H-2) { game->players[i].data.y -= 2*WIN_H-4; }
     else if (game->players[i].data.y <= 2) { game->players[i].data.y += 2*WIN_H-4; }
     if (game->players[i].data.x >= WIN_W-1) { game->players[i].data.x -= WIN_W-2; }
     else if (game->players[i].data.x <= 1) { game->players[i].data.x += WIN_W-2; }
 
-    if (game->bullets[i].type == BULLET) {
-      game->bullets[i].fuse -= delta;
-      if (game->bullets[i].fuse < 0) {
-        game->bullets[i] = err_bullet();
-      }
 
+    if (game->bullets[i].type == BULLET) {
+      game->bullets[i].data.y += game->bullets[i].data.vely * d;
+      game->bullets[i].data.x += game->bullets[i].data.velx * d;
+
+      if (game->bullets[i].data.y >= 2*WIN_H-2) { game->bullets[i].data.y -= 2*WIN_H-4; }
+      else if (game->bullets[i].data.y <= 2) { game->bullets[i].data.y += 2*WIN_H-4; }
+      if (game->bullets[i].data.x >= WIN_W-1) { game->bullets[i].data.x -= WIN_W-2; }
+      else if (game->bullets[i].data.x <= 1) { game->bullets[i].data.x += WIN_W-2; }
+
+      // Check if a bullet has hit a ship and update positions & score
       for (int j=0; j<=1; j++) {
         double dy = game->bullets[i].data.y - game->players[j].data.y;
         double dx = game->bullets[i].data.x - game->players[j].data.x;
-        double r = sqrt(fabs(dy)*fabs(dy) + fabs(dx)*fabs(dx));
+        double r = sqrt(total_dist_squared(dy, dx));
         if (r < 1) {
           destroy(&game->players[j]);
           game->bullets[i] = err_bullet();
           game->players[1-j].score += 250;
         }
       }
+
+      // Destroy bullets if they've crashed into each other
+      dy = game->bullets[i].data.y - game->bullets[1-i].data.y;
+      dx = game->bullets[i].data.x - game->bullets[1-i].data.x;
+      r = sqrt(total_dist_squared(dy, dx));
+      if (r < 1) {
+        game->bullets[i] = err_bullet();
+        game->bullets[1-i] = err_bullet();
+      }
+
+      // Destroy bullet after certain amount of time
+      game->bullets[i].fuse -= delta;
+      if (game->bullets[i].fuse < 0) {
+        game->bullets[i] = err_bullet();
+      }
     }
-
-    game->bullets[i].data.y += game->bullets[i].data.vely * d;
-    game->bullets[i].data.x += game->bullets[i].data.velx * d;
-
-    if (game->bullets[i].data.y >= 2*WIN_H-2) { game->bullets[i].data.y -= 2*WIN_H-4; }
-    else if (game->bullets[i].data.y <= 2) { game->bullets[i].data.y += 2*WIN_H-4; }
-    if (game->bullets[i].data.x >= WIN_W-1) { game->bullets[i].data.x -= WIN_W-2; }
-    else if (game->bullets[i].data.x <= 1) { game->bullets[i].data.x += WIN_W-2; }
   }
 }
 
