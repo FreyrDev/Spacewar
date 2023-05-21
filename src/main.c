@@ -113,11 +113,8 @@ void destroy(Player *player) {
  * Steps all physics on each frame, with delta since last frame to correct for frametime differences
  */
 
-void update_physics(WINDOW* game_win, GameState *game, int delta, int frame) {
+void update_physics(GameState *game, int delta, int frame) {
   double d = (double)delta/33333333.3 * PHYSICS_SPEED;
-  int winh;
-  int winw;
-  getmaxyx(game_win, winh, winw);
 
   for (int i=0; i < 2; i++) {
 
@@ -178,10 +175,10 @@ void update_physics(WINDOW* game_win, GameState *game, int delta, int frame) {
     game->players[i].data.y += game->players[i].data.vely * d;
     game->players[i].data.x += game->players[i].data.velx * d;
 
-    if (game->players[i].data.y >= 2*winh-2) { game->players[i].data.y -= 2*winh-4; }
-    else if (game->players[i].data.y <= 2) { game->players[i].data.y += 2*winh-4; }
-    if (game->players[i].data.x >= winw-1) { game->players[i].data.x -= winw-2; }
-    else if (game->players[i].data.x <= 1) { game->players[i].data.x += winw-2; }
+    if (game->players[i].data.y >= 2*WIN_H-2) { game->players[i].data.y -= 2*WIN_H-4; }
+    else if (game->players[i].data.y <= 2) { game->players[i].data.y += 2*WIN_H-4; }
+    if (game->players[i].data.x >= WIN_W-1) { game->players[i].data.x -= WIN_W-2; }
+    else if (game->players[i].data.x <= 1) { game->players[i].data.x += WIN_W-2; }
 
     if (game->bullets[i].type == BULLET) {
       game->bullets[i].fuse -= delta;
@@ -204,10 +201,10 @@ void update_physics(WINDOW* game_win, GameState *game, int delta, int frame) {
     game->bullets[i].data.y += game->bullets[i].data.vely * d;
     game->bullets[i].data.x += game->bullets[i].data.velx * d;
 
-    if (game->bullets[i].data.y >= 2*winh-2) { game->bullets[i].data.y -= 2*winh-4; }
-    else if (game->bullets[i].data.y <= 2) { game->bullets[i].data.y += 2*winh-4; }
-    if (game->bullets[i].data.x >= winw-1) { game->bullets[i].data.x -= winw-2; }
-    else if (game->bullets[i].data.x <= 1) { game->bullets[i].data.x += winw-2; }
+    if (game->bullets[i].data.y >= 2*WIN_H-2) { game->bullets[i].data.y -= 2*WIN_H-4; }
+    else if (game->bullets[i].data.y <= 2) { game->bullets[i].data.y += 2*WIN_H-4; }
+    if (game->bullets[i].data.x >= WIN_W-1) { game->bullets[i].data.x -= WIN_W-2; }
+    else if (game->bullets[i].data.x <= 1) { game->bullets[i].data.x += WIN_W-2; }
   }
 }
 
@@ -513,7 +510,7 @@ int main() {
       }
       else {
         handle_game_inputs(&game, keys_pressed, &pause_toggle);
-        update_physics(win, &game, delta, frame);
+        update_physics(&game, delta, frame);
         update_screen(win, ui1, ui2, game);
 
         if (game.players[0].score >= 1000 || game.players[1].score <= -1000) {
