@@ -416,9 +416,9 @@ void handle_game_inputs(GameState *game, int keys[], int *pause_toggle) {
       game->players[0].dir %= 8;
     }
     else if (keys[i] == 's' && game->bullets[0].type == ERR) {
-      game->bullets[0] = new_bullet(game->players[0].data.y+2*thrust_vector(game->players[0].dir, 'y'), game->players[0].data.x+2*thrust_vector(game->players[0].dir, 'x'));
-      game->bullets[0].data.vely = game->players[0].data.vely + 0.5*thrust_vector(game->players[0].dir, 'y');
-      game->bullets[0].data.velx = game->players[0].data.velx + 0.5*thrust_vector(game->players[0].dir, 'x');
+      game->bullets[0] = new_bullet(game->players[0].data.y+2*thrust_vector(game->players[0].dir, Y), game->players[0].data.x+2*thrust_vector(game->players[0].dir, X));
+      game->bullets[0].data.vely = game->players[0].data.vely + 0.5*thrust_vector(game->players[0].dir, Y);
+      game->bullets[0].data.velx = game->players[0].data.velx + 0.5*thrust_vector(game->players[0].dir, X);
     }
     else if (keys[i] == KEY_UP  && game->players[1].temp >= 0) {
       game->players[1].acc = !game->players[1].acc;
@@ -432,9 +432,9 @@ void handle_game_inputs(GameState *game, int keys[], int *pause_toggle) {
       game->players[1].dir %= 8;
     }
     else if (keys[i] == KEY_DOWN && game->bullets[1].type == ERR) {
-      game->bullets[1] = new_bullet(game->players[1].data.y+2*thrust_vector(game->players[1].dir, 'y'), game->players[1].data.x+2*thrust_vector(game->players[1].dir, 'x'));
-      game->bullets[1].data.vely = game->players[1].data.vely + 0.5*thrust_vector(game->players[1].dir, 'y');
-      game->bullets[1].data.velx = game->players[1].data.velx + 0.5*thrust_vector(game->players[1].dir, 'x');
+      game->bullets[1] = new_bullet(game->players[1].data.y+2*thrust_vector(game->players[1].dir, Y), game->players[1].data.x+2*thrust_vector(game->players[1].dir, X));
+      game->bullets[1].data.vely = game->players[1].data.vely + 0.5*thrust_vector(game->players[1].dir, Y);
+      game->bullets[1].data.velx = game->players[1].data.velx + 0.5*thrust_vector(game->players[1].dir, X);
     }
   }
 }
