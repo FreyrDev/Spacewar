@@ -153,7 +153,7 @@ void update_physics(GameState *game, int delta, int frame) {
     game->players[i].data.vely += g * unity * d;
     game->players[i].data.velx += g * unitx * d;
 
-    if (r < 0.5) {
+    if (r < 1) {
       destroy(&game->players[i]);
     }
 
@@ -161,7 +161,7 @@ void update_physics(GameState *game, int delta, int frame) {
     dy = game->players[i].data.y - game->players[1-i].data.y;
     dx = game->players[i].data.x - game->players[1-i].data.x;
     r = sqrt(total_dist_squared(dy, dx));
-    if (r < 1) {
+    if (r < 2) {
       destroy(&game->players[i]);
       destroy(&game->players[1-i]);
     }
@@ -198,7 +198,7 @@ void update_physics(GameState *game, int delta, int frame) {
         double dy = game->bullets[i].data.y - game->players[j].data.y;
         double dx = game->bullets[i].data.x - game->players[j].data.x;
         double r = sqrt(total_dist_squared(dy, dx));
-        if (r < 1) {
+        if (r < 2) {
           destroy(&game->players[j]);
           game->bullets[i] = err_bullet();
           game->players[1-j].score += 250;
@@ -209,7 +209,7 @@ void update_physics(GameState *game, int delta, int frame) {
       dy = game->bullets[i].data.y - game->bullets[1-i].data.y;
       dx = game->bullets[i].data.x - game->bullets[1-i].data.x;
       r = sqrt(total_dist_squared(dy, dx));
-      if (r < 1) {
+      if (r < 2) {
         game->bullets[i] = err_bullet();
         game->bullets[1-i] = err_bullet();
       }
