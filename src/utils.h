@@ -20,22 +20,44 @@
 enum Type { BLACKHOLE, PLAYER1, PLAYER2, BULLET };
 enum Dir  { N, NE, E, SE, S, SW, W, NW };
 
-typedef struct GameObject {
-  enum Type type;
+typedef struct ObjectData {
   double y, x;
   double y1, x1;
   double y2, x2;
   double y3, x3;
   double vely, velx;
+} ObjectData;
+
+typedef struct BlackHole {
+  double y, x;
+} BlackHole;
+
+typedef struct Player {
+  enum Type type;
+  ObjectData data;
   int acc, dir, score;
-} GameObject;
+} Player;
+
+typedef struct Bullet {
+  enum Type type;
+  ObjectData data;
+  int fuse;
+} Bullet;
+
+typedef struct GameState {
+  BlackHole bh;
+  Player players[2];
+  Bullet bullets[2];
+} GameState;
 
 void wcolour(WINDOW *win, int col);
 void colour(int col);
 int get_delta(struct timespec *start, struct timespec *end);
-GameObject new_gameobject(enum Type type, double y, double x, enum Dir dir, int score);
-GameObject err_gameobject();
-double total_vel(GameObject object);
+ObjectData new_objectdata(double y, double x);
+Player new_player(enum Type type, double y, double x, int dir, int score);
+Bullet new_bullet(double y, double x);
+Bullet err_bullet();
+double total_vel(ObjectData object);
 double thrust_vector(int object_dir, char axis);
 wchar_t charoftype(enum Type type);
 wchar_t charofdir(enum Dir dir);

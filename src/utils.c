@@ -21,18 +21,28 @@ int get_delta(struct timespec *start, struct timespec *end) {
   result += end->tv_nsec - start->tv_nsec;
 }
 
-// Constructor function for GameObjects, so you don't have to type coords four times
-GameObject new_gameobject(enum Type type, double y, double x, enum Dir dir, int score) {
-  return (GameObject){type, y, x, y, x, y, x, y, x, 0, 0, 0, dir, score};
+// Constructor function for ObjectData, so you don't have to type coords four times
+ObjectData new_objectdata(double y, double x) {
+  return (ObjectData){y, x, y, x, y, x, y, x, 0, 0};
 }
 
-// Blank GameObject with ERR type
-GameObject err_gameobject() {
-  return new_gameobject(ERR, 0, 0, 0, 0);
+// Constructor function for Players
+Player new_player(enum Type type, double y, double x, int dir, int score) {
+  return (Player){type, new_objectdata(y, x), 0, dir, score};
+}
+
+// Constructor function for Bullets
+Bullet new_bullet(double y, double x) {
+  return (Bullet){BULLET, new_objectdata(y, x), INT_MAX};
+}
+
+// Blank Bullet with ERR type
+Bullet err_bullet() {
+  return (Bullet){ERR, new_objectdata(0, 0), 0};
 }
 
 // Calculates the total velocity from the component parts
-double total_vel(GameObject object) {
+double total_vel(ObjectData object) {
   return sqrt(object.vely*object.vely + object.velx*object.velx);
 }
 
