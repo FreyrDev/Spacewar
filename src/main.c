@@ -231,12 +231,7 @@ void update_physics(GameState *game, int delta, int frame) {
 
 void update_screen(WINDOW *win, WINDOW *ui1, WINDOW *ui2, GameState game) {
   WINDOW *ui[] = { ui1, ui2 };
-
   werase(win);
-  box(win, 0, 0);
-
-  mvwprintw(win, 0, 4, "┤ SPACEWAR! ├");
-  mvwprintw(win, game.bh.y/2, game.bh.x, "%lc", charoftype(BLACKHOLE));
 
   for (int i=0; i < 2; i++) {
     wcolour(win, 3);
@@ -251,6 +246,12 @@ void update_screen(WINDOW *win, WINDOW *ui1, WINDOW *ui2, GameState game) {
     mvwprintw(win, (game.players[i].data.y)/2, game.players[i].data.x, "%lc", charoftype(game.players[i].type));
     mvwprintw(win, (game.bullets[i].data.y)/2, game.bullets[i].data.x, "%lc", charoftype(game.bullets[i].type));
   }
+  
+  mvwprintw(win, game.bh.y / 2, game.bh.x, "%lc", charoftype(BLACKHOLE));
+
+  box(win, 0, 0);
+  mvwprintw(win, 0, 4, "┤ SPACEWAR! ├");
+
   wnoutrefresh(win);
 
   for (int i=0; i<2; i++) {
