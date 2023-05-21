@@ -74,8 +74,8 @@ void create_ui(WINDOW *ui, int player) {
     "│           │ │              │"
     "│           │ │      ╶╴      │"
     "│           │ └──────────────┘"
-    "│           │ ┌──────────────┐"
-    "│           │ │.~^~._.~^~._.~│"
+    "│           │ ┌┤ ENG. TEMP. ├┐"
+    "│           │ │              │"
     "└───────────┘ └──────────────┘"
     "┌─┤ HEADING ├─┐ ┌┤ WEAPONRY ├┐"
     "│             │ │            │"
@@ -84,7 +84,7 @@ void create_ui(WINDOW *ui, int player) {
     "│        ---  │ │ |  |  ---  │"
     "│             │ │ I==I       │"
     "└─────────────┘ └────────────┘"
-    "┌────┤ STATUS READOUTS ├─────┐"
+    "┌─────┤ STATUS READOUT ├─────┐"
     "│                            │"
     "│ CURRENT VELOCITY           │"
     "│ TRAVEL DIRECTION           │"
@@ -143,9 +143,21 @@ void update_physics(WINDOW* game_win, GameState *game, int delta, int frame) {
       game->bullets[i].data.x1 = game->bullets[i].data.x;
     }
 
-    if (game->players[i].acc) {
+    if (game->players[i].temp > 100) {
+      game->players[i].acc = false;
+      game->players[i].temp = -100;
+    }
+    else if (game->players[i].temp < 0) {
+      game->players[i].temp += d;
+    }
+    else if (!game->players[i].acc) {
+      game->players[i].temp -= d/2;
+      if (game->players[i].temp < 0) { game->players[i].temp = 0; }
+    }
+    else {
       game->players[i].data.vely += 0.005 * thrust_vector(game->players[i].dir, 'y') * d;
       game->players[i].data.velx += 0.005 * thrust_vector(game->players[i].dir, 'x') * d;
+      game->players[i].temp += d;
     }
 
     double dy = game->players[i].data.y - game->bh.y;
@@ -290,6 +302,15 @@ void update_screen(WINDOW *win, WINDOW *ui1, WINDOW *ui2, GameState game) {
       mvwprintw(ui[i], 12,  4, "     ");
     }
 
+    for (int j = 0; j < 14; j++) {
+      if ((100/14)*j < game.players[i].temp) { mvwaddch(ui[i], 12, 15+j, '|'); }
+      else { mvwaddch(ui[i], 12, 15+j, ' '); }
+    }
+
+    if (game.players[i].temp < 0) {
+      mvwprintw(ui[i], 12, 15, " ! OVERHEAT ! ");
+    }
+
     mvwprintw(ui[i], 16, 2, "· · ·");
     mvwprintw(ui[i], 17, 2, "· • ·");
     mvwprintw(ui[i], 18, 2, "· · ·");
@@ -386,7 +407,7 @@ void handle_game_inputs(GameState *game, int keys[], int *pause_toggle) {
     if (keys[i] == '\n') {
       *pause_toggle = true;
     }
-    else if (keys[i] == 'w') {
+    else if (keys[i] == 'w' && game->players[0].temp >= 0) {
       game->players[0].acc = !game->players[0].acc;
     }
     else if (keys[i] == 'a') {
@@ -405,7 +426,7 @@ void handle_game_inputs(GameState *game, int keys[], int *pause_toggle) {
     else if (keys[i] == KEY_UP) {
       game->players[1].acc = !game->players[1].acc;
     }
-    else if (keys[i] == KEY_LEFT) {
+    else if (keys[i] == KEY_LEFT && game->players[1].temp >= 0) {
       game->players[1].dir -= 1;
       if(game->players[1].dir < 0) { game->players[1].dir += 8;}
     }

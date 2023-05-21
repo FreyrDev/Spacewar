@@ -35,6 +35,7 @@ typedef struct BlackHole {
 typedef struct Player {
   enum Type type;
   ObjectData data;
+  float temp;
   int acc, dir, score;
 } Player;
 

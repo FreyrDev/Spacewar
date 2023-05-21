@@ -28,7 +28,7 @@ ObjectData new_objectdata(double y, double x) {
 
 // Constructor function for Players
 Player new_player(enum Type type, double y, double x, int dir, int score) {
-  return (Player){type, new_objectdata(y, x), 0, dir, score};
+  return (Player){type, new_objectdata(y, x), 0, 0, dir, score};
 }
 
 // Constructor function for Bullets
