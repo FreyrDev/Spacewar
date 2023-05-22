@@ -19,6 +19,7 @@ int get_delta(struct timespec *start, struct timespec *end) {
   result += end->tv_sec - start->tv_sec;
   result *= 1000000000;
   result += end->tv_nsec - start->tv_nsec;
+  return result;
 }
 
 // Constructor function for ObjectData, so you don't have to type coords four times
@@ -118,5 +119,6 @@ wchar_t charofdir(enum Dir dir) {
     case SW: return L'↙';
     case W:  return L'←';
     case NW: return L'↖';
+    default: return L'·';
   }
 }
